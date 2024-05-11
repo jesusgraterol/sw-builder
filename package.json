@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "start": "ts-lib-builder --tsconfigPath=tsconfig.build.json",    
+    "start": "ts-lib-builder --tsconfigPath=tsconfig.build.json",
     "test": "echo \"Error: tests are executed with  npm run test:(integration|unit)\" && exit 1",
     "test:integration": "vitest run --config vitest.test-integration.config.ts",
     "test:unit": "vitest run --config vitest.test-unit.config.ts"
@@ -47,5 +47,10 @@
     "ts-lib-builder": "^1.0.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "argv-utils": "^1.0.2",
+    "error-message-utils": "^1.0.1",
+    "fs-utils-sync": "^1.0.0"
   }
 }
