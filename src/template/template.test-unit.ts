@@ -1,6 +1,7 @@
 import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import { readTextFile } from 'fs-utils-sync';
-import { buildBaseTemplate } from './template.js';
+import { buildTemplate } from './template.js';
+import { ERRORS } from '../shared/errors.js';
 
 /* ************************************************************************************************
  *                                             MOCKS                                              *
@@ -58,11 +59,19 @@ describe('Template', () => {
   });
 
   describe('buildBaseTemplate', () => {
+    test('throws if an invalid template name is provided', () => {
+      // @ts-ignore
+      expect(() => buildTemplate('non-existent')).toThrowError(ERRORS.INVALID_TEMPLATE_NAME);
+    });
+
     test('can build a base template', () => {
       // @ts-ignore
       readTextFile.mockReturnValue(buildBaseMock());
-      const template = buildBaseTemplate('testcache', ['/', '/assets/', '/assets/bundle.js', '/index.html']);
-      expect(template).toBe(buildBaseMock(
+      expect(buildTemplate(
+        'base',
+        'testcache',
+        ['/', '/assets/', '/assets/bundle.js', '/index.html'],
+      )).toBe(buildBaseMock(
         'const CACHE_NAME = \'testcache\';',
 `const PRECACHE_ASSETS = [
   '/',

@@ -1,5 +1,6 @@
+import { encodeError } from 'error-message-utils';
 import { readTextFile } from 'fs-utils-sync';
-import { ITemplateName } from '../shared/index.js';
+import { ERRORS, ITemplateName } from '../shared/index.js';
 
 /* ************************************************************************************************
  *                                            HELPERS                                             *
@@ -58,23 +59,45 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
  *                                         IMPLEMENTATION                                         *
  ************************************************************************************************ */
 
-
 /**
  * Builds the base template ready to be saved.
  * @param cacheName
  * @param precacheAssets
  * @returns string
- * @throws
- * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
- * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
  */
-const buildBaseTemplate = (
+const __buildBaseTemplate = (
   cacheName: string,
   precacheAssets: string[],
 ): string => __insertPrecacheAssets(
   __insertCacheName(__getRawTemplate('base'), cacheName),
   precacheAssets,
 );
+
+/**
+ * Builds a Service Worker Template by name.
+ * @param template
+ * @param cacheName
+ * @param precacheAssets
+ * @returns string
+ * @throws
+ * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
+ * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
+ * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
+ */
+const buildTemplate = (
+  template: ITemplateName,
+  cacheName: string,
+  precacheAssets: string[],
+): string => {
+  switch (template) {
+    case 'base': {
+      return __buildBaseTemplate(cacheName, precacheAssets);
+    }
+    default: {
+      throw new Error(encodeError(`The template name '${template}' is not supported.`, ERRORS.INVALID_TEMPLATE_NAME));
+    }
+  }
+};
 
 
 
@@ -84,5 +107,5 @@ const buildBaseTemplate = (
  *                                         MODULE EXPORTS                                         *
  ************************************************************************************************ */
 export {
-  buildBaseTemplate,
+  buildTemplate,
 };
