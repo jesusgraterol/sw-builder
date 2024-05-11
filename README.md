@@ -8,7 +8,7 @@ The `sw-builder` package automates the creation of your Application's Service Wo
 
 Install the package:
 ```bash
-$ npm install -S sw-builder
+$ npm install -D sw-builder
 ```
 
 Create the `sw-builder.config.json` file in your project's root:
