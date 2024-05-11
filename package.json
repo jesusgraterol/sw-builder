@@ -1,0 +1,51 @@
+{
+  "name": "sw-builder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "start": "ts-lib-builder --tsconfigPath=tsconfig.build.json",    
+    "test": "echo \"Error: tests are executed with  npm run test:(integration|unit)\" && exit 1",
+    "test:integration": "vitest run --config vitest.test-integration.config.ts",
+    "test:unit": "vitest run --config vitest.test-unit.config.ts"
+  },
+  "bin": {
+    "sw-builder": "dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jesusgraterol/sw-builder.git"
+  },
+  "keywords": [
+    "web",
+    "api",
+    "web-api",
+    "sw",
+    "service-worker",
+    "cache",
+    "pwa",
+    "progressive",
+    "progressive-web-application",
+    "app",
+    "gui",
+    "interface",
+    "user-interface"
+  ],
+  "author": "Jesus Graterol",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jesusgraterol/sw-builder/issues"
+  },
+  "homepage": "https://github.com/jesusgraterol/sw-builder#readme",
+  "devDependencies": {
+    "@types/node": "^20.12.11",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "ts-lib-builder": "^1.0.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
