@@ -23,7 +23,7 @@ Create the `sw-builder.config.json` file in your project's root:
     "/logo.png",
     "/splash.png"
   ],
-  "excludeFromPrecache": [
+  "excludeFilesFromPrecache": [
     "/assets/some-ignorable-file.woff2",
   ]
 }

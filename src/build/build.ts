@@ -26,11 +26,15 @@ const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   // load the configuration file
   const configuration = readConfigFile(config);
 
-  // build the Service Worker's template
+  // build the Service Worker's Template
   const template = buildTemplate(
     configuration.template,
     generateCacheName(),
-    buildPrecacheAssetPaths(configuration.includeToPrecache, configuration.excludeFromPrecache),
+    buildPrecacheAssetPaths(
+      configuration.outDir,
+      configuration.includeToPrecache,
+      configuration.excludeFilesFromPrecache,
+    ),
   );
 
   // finally, save the file in the specified path

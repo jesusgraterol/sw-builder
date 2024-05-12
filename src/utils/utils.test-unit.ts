@@ -9,7 +9,17 @@ import {
   generateCacheName,
   readConfigFile,
   buildOutputPath,
+  buildPrecacheAssetPaths,
 } from './utils.js';
+
+/* ************************************************************************************************
+ *                                           CONSTANTS                                            *
+ ************************************************************************************************ */
+
+// mock value for outDir
+const OUT_DIR: string = 'test-dist';
+
+
 
 
 
@@ -37,7 +47,7 @@ const c = (config?: Partial<IBaseConfig>): IBaseConfig => ({
   outDir: config?.outDir ?? 'dist',
   template: config?.template ?? 'base',
   includeToPrecache: config?.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
-  excludeFromPrecache: config?.excludeFromPrecache ?? [],
+  excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
   ...config,
 });
 
@@ -122,9 +132,38 @@ describe('generateCacheName', () => {
 
 
 
-describe('buildPrecacheAssetPaths', () => {
 
+describe('buildPrecacheAssetPaths', () => {
+  beforeAll(() => { });
+
+  afterAll(() => { });
+
+  beforeEach(() => { });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('includes the root path / even if it is not provided', () => {
+    expect(buildPrecacheAssetPaths(OUT_DIR, [], [])).toStrictEqual(['/']);
+  });
+
+  test.skip('can build a basic list of assets without exclusions', () => {
+    isFile.mockReturnValueOnce(true);
+    expect(buildPrecacheAssetPaths(OUT_DIR, [
+      '/index.html',
+      '/styles.css',
+      '/app.js',
+      '/img',
+    ], [])).toStrictEqual([
+      '/',
+      '/index.html',
+      '/styles.css',
+      '/app.js',
+    ]);
+  });
 });
+
 
 
 

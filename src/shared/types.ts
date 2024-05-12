@@ -34,7 +34,7 @@ interface IBaseConfig {
   includeToPrecache: string[],
 
   // the list of file paths that will be ignored
-  excludeFromPrecache: string[],
+  excludeFilesFromPrecache: string[],
 }
 
 
