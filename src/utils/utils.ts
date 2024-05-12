@@ -1,6 +1,6 @@
 import { normalize } from 'node:path';
 import { encodeError } from 'error-message-utils';
-import { isDirectory, readJSONFile } from 'fs-utils-sync';
+import { isDirectory, readJSONFile, getPathElement, IPathElement } from 'fs-utils-sync';
 import { ERRORS, IBaseConfig } from '../shared/index.js';
 
 /* ************************************************************************************************
@@ -49,7 +49,20 @@ const __validateConfigFile = (config: IBaseConfig): void => {
   }
 };
 
-
+/**
+ * Extracts the path element from a given path.
+ * @param path
+ * @returns IPathElement
+ * @throws
+ * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
+ */
+const __getPathElement = (path: string): IPathElement => {
+  const el = getPathElement(path);
+  if (el === null || (!el.isDirectory && !el.isFile)) {
+    throw new Error(encodeError(`The asset '${path}' is not a path element.`, ERRORS.NOT_A_PATH_ELEMENT));
+  }
+  return el;
+};
 
 
 
