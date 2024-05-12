@@ -1,5 +1,5 @@
 import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
-import { isDirectory, readJSONFile } from 'fs-utils-sync';
+import { isDirectory, isFile, readJSONFile } from 'fs-utils-sync';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import {
@@ -21,6 +21,7 @@ import {
 vi.mock('fs-utils-sync', () => ({
   readJSONFile: vi.fn(),
   isDirectory: vi.fn(),
+  isFile: vi.fn(),
 }));
 
 
@@ -116,6 +117,13 @@ describe('generateCacheName', () => {
     const unique: Set<string> = new Set(arr);
     expect(unique.size).toBe(arr.length);
   });
+});
+
+
+
+
+describe('buildPrecacheAssetPaths', () => {
+
 });
 
 

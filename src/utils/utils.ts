@@ -93,10 +93,16 @@ const generateCacheName = (): string => {
  * @param excludeFromPrecache
  * @returns string[]
  */
-const expandPrecacheAssetPaths = (
+const buildPrecacheAssetPaths = (
   includeToPrecache: string[],
   excludeFromPrecache: string[],
-): string[] => [];
+): string[] => {
+  // init the list of assets
+  const assets: string[] = ['/'];
+
+  // finally, return the completed list
+  return assets;
+};
 
 /**
  * Builds the binary's output build based on the config's outDir.
@@ -119,6 +125,6 @@ export {
   // implementation
   readConfigFile,
   generateCacheName,
-  expandPrecacheAssetPaths,
+  buildPrecacheAssetPaths,
   buildOutputPath,
 };

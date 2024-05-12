@@ -2,7 +2,7 @@ import { writeTextFile } from 'fs-utils-sync';
 import { IModuleArgs } from '../shared/index.js';
 import {
   buildOutputPath,
-  expandPrecacheAssetPaths,
+  buildPrecacheAssetPaths,
   generateCacheName,
   readConfigFile,
 } from '../utils/index.js';
@@ -10,13 +10,6 @@ import { buildTemplate } from '../template/index.js';
 
 /* ************************************************************************************************
  *                                         IMPLEMENTATION                                         *
- ************************************************************************************************ */
-
-
-
-
-/* ************************************************************************************************
- *                                            EXECUTION                                           *
  ************************************************************************************************ */
 
 /**
@@ -37,7 +30,7 @@ const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   const template = buildTemplate(
     configuration.template,
     generateCacheName(),
-    expandPrecacheAssetPaths(configuration.includeToPrecache, configuration.excludeFromPrecache),
+    buildPrecacheAssetPaths(configuration.includeToPrecache, configuration.excludeFromPrecache),
   );
 
   // finally, save the file in the specified path
