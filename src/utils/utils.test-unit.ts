@@ -1,8 +1,15 @@
 import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import { isDirectory, readJSONFile } from 'fs-utils-sync';
-import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, generateCacheName, readConfigFile } from './utils.js';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
+import {
+  OUTPUT_NAME,
+  CACHE_NAME_CHARACTERS,
+  CACHE_NAME_LENGTH,
+  generateCacheName,
+  readConfigFile,
+  buildOutputPath,
+} from './utils.js';
 
 
 
@@ -108,5 +115,16 @@ describe('generateCacheName', () => {
     const arr: string[] = [generateCacheName(), generateCacheName(), generateCacheName()];
     const unique: Set<string> = new Set(arr);
     expect(unique.size).toBe(arr.length);
+  });
+});
+
+
+
+
+describe('buildOutputPath', () => {
+  test('can build the output path based on the outDir', () => {
+    expect(buildOutputPath('dist')).toBe(`dist/${OUTPUT_NAME}`);
+    expect(buildOutputPath('./dist')).toBe(`dist/${OUTPUT_NAME}`);
+    expect(buildOutputPath('distribution')).toBe(`distribution/${OUTPUT_NAME}`);
   });
 });

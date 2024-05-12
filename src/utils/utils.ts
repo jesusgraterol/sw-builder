@@ -1,3 +1,4 @@
+import { normalize } from 'node:path';
 import { encodeError } from 'error-message-utils';
 import { isDirectory, readJSONFile } from 'fs-utils-sync';
 import { ERRORS, IBaseConfig } from '../shared/index.js';
@@ -86,7 +87,23 @@ const generateCacheName = (): string => {
   return nm;
 };
 
+/**
+ * Puts the list of all the assets that must be cached based on the include and exclude lists.
+ * @param includeToPrecache
+ * @param excludeFromPrecache
+ * @returns string[]
+ */
+const expandPrecacheAssetPaths = (
+  includeToPrecache: string[],
+  excludeFromPrecache: string[],
+): string[] => [];
 
+/**
+ * Builds the binary's output build based on the config's outDir.
+ * @param outDir
+ * @returns string
+ */
+const buildOutputPath = (outDir: string): string => normalize(`${outDir}/${OUTPUT_NAME}`);
 
 
 
@@ -102,4 +119,6 @@ export {
   // implementation
   readConfigFile,
   generateCacheName,
+  expandPrecacheAssetPaths,
+  buildOutputPath,
 };
