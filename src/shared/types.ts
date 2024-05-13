@@ -33,7 +33,7 @@ interface IBaseConfig {
   // the list of asset paths that will be traversed and included in the cache
   includeToPrecache: string[],
 
-  // the list of file paths that will be ignored
+  // the list of file names that will be ignored
   excludeFilesFromPrecache: string[],
 }
 

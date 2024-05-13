@@ -1,6 +1,11 @@
 import { normalize } from 'node:path';
 import { encodeError } from 'error-message-utils';
-import { isDirectory, readJSONFile, getPathElement, IPathElement } from 'fs-utils-sync';
+import {
+  isDirectory,
+  readJSONFile,
+  getPathElement,
+  IPathElement,
+} from 'fs-utils-sync';
 import { ERRORS, IBaseConfig } from '../shared/index.js';
 
 /* ************************************************************************************************
@@ -125,6 +130,8 @@ const buildPrecacheAssetPaths = (
  * @returns string
  */
 const buildOutputPath = (outDir: string): string => normalize(`${outDir}/${OUTPUT_NAME}`);
+
+
 
 
 
