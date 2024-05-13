@@ -23,6 +23,9 @@ const CACHE_NAME_LENGTH: number = 10;
 const OUTPUT_NAME: string = 'sw.js';
 
 
+
+
+
 /* ************************************************************************************************
  *                                            HELPERS                                             *
  ************************************************************************************************ */
@@ -83,7 +86,7 @@ const __extractCacheableFilesFromDirectory = (
   excludeFilesFromPrecache: string[],
 ): string[] => {
   // read all the directory contents
-  let content: string[] = readDirectory(join(outDir, path), true);
+  let content: string[] = readDirectory(path, true);
 
   // filter those paths that are not cacheable
   content = content.filter((p: string) => {
@@ -94,6 +97,8 @@ const __extractCacheableFilesFromDirectory = (
   // finally, remove the outDir from the path
   return content.map((filePath: string) => filePath.replace(outDir, ''));
 };
+
+
 
 
 
