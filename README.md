@@ -33,10 +33,10 @@ Include the `sw-builder` binary in your `package.json` file:
 ```json
 ...
 "scripts": {
-  "build": "sw-builder && tsc && ...",
+  "build": "tsc && ... && sw-builder",
   
   // specify a custom path for the configuration file
-  "build": "sw-builder --config='sw-custom.config.json' && tsc && ...",
+  "build": " tsc && ... && sw-builder --config='sw-custom.config.json'",
 }
 ...
 ```
