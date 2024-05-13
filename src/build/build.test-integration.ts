@@ -1,13 +1,5 @@
-import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
-import {
-  deleteDirectory,
-  deleteFile,
-  isFile,
-  readFile,
-  readTextFile,
-  writeJSONFile,
-  writeTextFile,
-} from 'fs-utils-sync';
+import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect } from 'vitest';
+import { deleteDirectory, deleteFile, isFile, writeJSONFile, writeTextFile } from 'fs-utils-sync';
 import { IBaseConfig, IModuleArgs } from '../shared/types.js';
 import { run } from './build.js';
 import { buildOutputPath } from '../utils/utils.js';
@@ -15,19 +7,6 @@ import { buildOutputPath } from '../utils/utils.js';
 /* ************************************************************************************************
  *                                             MOCKS                                              *
  ************************************************************************************************ */
-
-// fs-utils-sync mocks
-vi.mock('fs-utils-sync', async (importOriginal) => {
-  const actual: object = await importOriginal();
-  return {
-    ...actual,
-    readTextFile: vi.fn(),
-  };
-});
-
-
-
-
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -73,10 +52,6 @@ describe('Build', () => {
   afterEach(() => { });
 
   test('can build the Service Worker Base Template', () => {
-    // mock the base template to avoid path issues
-    // @ts-ignore
-    readTextFile.mockReturnValueOnce(readFile('src/template/raw/sw.base.js', { encoding: 'utf8' }));
-
     // create the config file
     writeJSONFile('sw-builder.config.json', c({
       includeToPrecache: [

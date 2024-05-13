@@ -45,7 +45,7 @@ vi.mock('fs-utils-sync', () => ({
 
 // configuration builder
 const c = (config?: Partial<IBaseConfig>): IBaseConfig => ({
-  outDir: config?.outDir ?? 'dist',
+  outDir: config?.outDir ?? OUT_DIR,
   template: config?.template ?? 'base',
   includeToPrecache: config?.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
   excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
