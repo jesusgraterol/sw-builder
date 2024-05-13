@@ -1,20 +1,10 @@
 import { encodeError } from 'error-message-utils';
-import { readTextFile } from 'fs-utils-sync';
 import { ERRORS, ITemplateName } from '../shared/index.js';
+import { BASE_TEMPLATE } from './templates/index.js';
 
 /* ************************************************************************************************
  *                                            HELPERS                                             *
  ************************************************************************************************ */
-
-/**
- * Reads the raw content for a given template name.
- * @param name
- * @returns string
- * @throws
- * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
- * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
- */
-const __getRawTemplate = (name: ITemplateName): string => readTextFile(`raw/sw.${name}.js`);
 
 /**
  * Inserts the freshly generated cacheName into the raw template.
@@ -69,7 +59,7 @@ const __buildBaseTemplate = (
   cacheName: string,
   precacheAssets: string[],
 ): string => __insertPrecacheAssets(
-  __insertCacheName(__getRawTemplate('base'), cacheName),
+  __insertCacheName(BASE_TEMPLATE, cacheName),
   precacheAssets,
 );
 

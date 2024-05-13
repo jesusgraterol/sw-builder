@@ -1,12 +1,12 @@
 {
   "name": "sw-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The sw-builder package automates the creation of your Application's Service Worker, which pre-caches your build. This leads to a better overall performance and enables users to access your PWA without an Internet connection.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "start": "rm -r -f dist && tsc --project tsconfig.build.json",
+    "start": "ts-lib-builder --tsconfigPath=tsconfig.build.json",
     "test": "echo \"Error: tests are executed with  npm run test:(integration|unit)\" && exit 1",
     "test:integration": "vitest run --config vitest.test-integration.config.ts",
     "test:unit": "vitest run --config vitest.test-unit.config.ts",
@@ -46,6 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
+    "ts-lib-builder": "^1.0.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },
