@@ -1,5 +1,5 @@
 import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
-import { IPathElement, isDirectory, readJSONFile, getPathElement } from 'fs-utils-sync';
+import { IPathElement, isDirectory, readJSONFile, getPathElement, readDirectory } from 'fs-utils-sync';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import {
@@ -32,6 +32,7 @@ vi.mock('fs-utils-sync', () => ({
   readJSONFile: vi.fn(),
   isDirectory: vi.fn(),
   getPathElement: vi.fn(),
+  readDirectory: vi.fn(),
 }));
 
 
@@ -76,6 +77,8 @@ const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any)
     }
   }
 };
+
+
 
 
 
@@ -181,13 +184,37 @@ describe('buildPrecacheAssetPaths', () => {
     ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
   });
 
+  test('throws if an asset is a symbolic link', () => {
+    mockGetPathElement([
+      pe({ baseName: '/index.html', isFile: true }),
+      pe({ baseName: '/app.js', isSymbolicLink: true }),
+    ]);
+    expect(() => buildPrecacheAssetPaths(OUT_DIR, [
+      '/index.html',
+      '/app.js',
+    ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
+  });
+
   test('includes the root path / even if it is not provided', () => {
     expect(buildPrecacheAssetPaths(OUT_DIR, [], [])).toStrictEqual(['/']);
   });
 
-  test.skip('can build a basic list of assets without exclusions', () => {
+  test('can build a basic list of assets without exclusions', () => {
+    mockGetPathElement([
+      pe({ baseName: '/index.html', isFile: true }),
+      pe({ baseName: '/styles.css', isFile: true }),
+      pe({ baseName: '/app.js', isFile: true }),
+      pe({ baseName: '/img', isDirectory: true }),
+    ]);
     // @ts-ignore
-    // isFile.mockReturnValueOnce(true);
+    readDirectory.mockReturnValueOnce([
+      `${OUT_DIR}/img/some-img.png`,
+      `${OUT_DIR}/img/some-other-img.jpg`,
+    ]);
+    mockGetPathElement([
+      pe({ baseName: 'some-img.png', isFile: true }),
+      pe({ baseName: 'some-other-img.jpg', isFile: true }),
+    ]);
     expect(buildPrecacheAssetPaths(OUT_DIR, [
       '/index.html',
       '/styles.css',
@@ -198,6 +225,38 @@ describe('buildPrecacheAssetPaths', () => {
       '/index.html',
       '/styles.css',
       '/app.js',
+      '/img/some-img.png',
+      '/img/some-other-img.jpg',
+    ]);
+  });
+
+  test('can build a basic list of assets with exclusions', () => {
+    mockGetPathElement([
+      pe({ baseName: '/index.html', isFile: true }),
+      pe({ baseName: '/styles.css', isFile: true }),
+      pe({ baseName: '/app.js', isFile: true }),
+      pe({ baseName: '/img', isDirectory: true }),
+    ]);
+    // @ts-ignore
+    readDirectory.mockReturnValueOnce([
+      `${OUT_DIR}/img/some-img.png`,
+      `${OUT_DIR}/img/some-other-img.jpg`,
+    ]);
+    mockGetPathElement([
+      pe({ baseName: 'some-img.png', isFile: true }),
+      pe({ baseName: 'some-other-img.jpg', isFile: true }),
+    ]);
+    expect(buildPrecacheAssetPaths(OUT_DIR, [
+      '/index.html',
+      '/styles.css',
+      '/app.js',
+      '/img',
+    ], ['some-other-img.jpg'])).toStrictEqual([
+      '/',
+      '/index.html',
+      '/styles.css',
+      '/app.js',
+      '/img/some-img.png',
     ]);
   });
 });

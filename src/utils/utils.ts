@@ -1,4 +1,4 @@
-import { normalize, join } from 'node:path';
+import { join } from 'node:path';
 import { encodeError } from 'error-message-utils';
 import {
   isDirectory,
@@ -75,17 +75,24 @@ const __getPathElement = (path: string): IPathElement => {
  * @param outDir
  * @param path
  * @param excludeFilesFromPrecache
+ * @returns string[]
  */
 const __extractCacheableFilesFromDirectory = (
   outDir: string,
   path: string,
   excludeFilesFromPrecache: string[],
 ): string[] => {
-  const content: string[] = readDirectory(join(outDir, path), true);
-  return content.filter((p: string) => {
+  // read all the directory contents
+  let content: string[] = readDirectory(join(outDir, path), true);
+
+  // filter those paths that are not cacheable
+  content = content.filter((p: string) => {
     const el = __getPathElement(p);
     return el.isFile && !excludeFilesFromPrecache.includes(el.baseName);
   });
+
+  // finally, remove the outDir from the path
+  return content.map((filePath: string) => filePath.replace(outDir, ''));
 };
 
 
@@ -167,7 +174,7 @@ const buildPrecacheAssetPaths = (
  * @param outDir
  * @returns string
  */
-const buildOutputPath = (outDir: string): string => normalize(`${outDir}/${OUTPUT_NAME}`);
+const buildOutputPath = (outDir: string): string => join(outDir, OUTPUT_NAME);
 
 
 
