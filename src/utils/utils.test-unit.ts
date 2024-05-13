@@ -1,5 +1,5 @@
 import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
-import { isDirectory, isFile, readJSONFile } from 'fs-utils-sync';
+import { IPathElement, isDirectory, readJSONFile, getPathElement } from 'fs-utils-sync';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import {
@@ -31,7 +31,7 @@ const OUT_DIR: string = 'test-dist';
 vi.mock('fs-utils-sync', () => ({
   readJSONFile: vi.fn(),
   isDirectory: vi.fn(),
-  isFile: vi.fn(),
+  getPathElement: vi.fn(),
 }));
 
 
@@ -50,6 +50,32 @@ const c = (config?: Partial<IBaseConfig>): IBaseConfig => ({
   excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
   ...config,
 });
+
+// path element builder
+const pe = (el: Partial<IPathElement>): IPathElement => ({
+  path: el?.path ?? '',
+  baseName: el?.baseName ?? '',
+  extName: el?.extName ?? '',
+  isFile: el?.isFile ?? false,
+  isDirectory: el?.isDirectory ?? false,
+  isSymbolicLink: el?.isSymbolicLink ?? false,
+  size: el?.size ?? 1000,
+  creation: el?.creation ?? Date.now(),
+});
+
+// mocks the getPathElement func so it returns a custom list of path elements
+const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any) => {
+  if (returnValues.length) {
+    const mockVal = returnValues.shift();
+    if (mockFn) {
+      // @ts-ignore
+      mockGetPathElement(returnValues, mockFn.mockReturnValueOnce(mockVal));
+    } else {
+      // @ts-ignore
+      mockGetPathElement(returnValues, getPathElement.mockReturnValueOnce(mockVal));
+    }
+  }
+};
 
 
 
@@ -144,12 +170,24 @@ describe('buildPrecacheAssetPaths', () => {
     vi.restoreAllMocks();
   });
 
+  test('throws if an asset does not exist', () => {
+    mockGetPathElement([
+      pe({ baseName: '/index.html', isFile: true }),
+      null,
+    ]);
+    expect(() => buildPrecacheAssetPaths(OUT_DIR, [
+      '/index.html',
+      '/app.js',
+    ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
+  });
+
   test('includes the root path / even if it is not provided', () => {
     expect(buildPrecacheAssetPaths(OUT_DIR, [], [])).toStrictEqual(['/']);
   });
 
   test.skip('can build a basic list of assets without exclusions', () => {
-    isFile.mockReturnValueOnce(true);
+    // @ts-ignore
+    // isFile.mockReturnValueOnce(true);
     expect(buildPrecacheAssetPaths(OUT_DIR, [
       '/index.html',
       '/styles.css',

@@ -1,10 +1,11 @@
-import { normalize } from 'node:path';
+import { normalize, join } from 'node:path';
 import { encodeError } from 'error-message-utils';
 import {
   isDirectory,
   readJSONFile,
   getPathElement,
   IPathElement,
+  readDirectory,
 } from 'fs-utils-sync';
 import { ERRORS, IBaseConfig } from '../shared/index.js';
 
@@ -69,6 +70,24 @@ const __getPathElement = (path: string): IPathElement => {
   return el;
 };
 
+/**
+ * Fully reads a given directory path and returns the files that are cacheable.
+ * @param outDir
+ * @param path
+ * @param excludeFilesFromPrecache
+ */
+const __extractCacheableFilesFromDirectory = (
+  outDir: string,
+  path: string,
+  excludeFilesFromPrecache: string[],
+): string[] => {
+  const content: string[] = readDirectory(join(outDir, path), true);
+  return content.filter((p: string) => {
+    const el = __getPathElement(p);
+    return el.isFile && !excludeFilesFromPrecache.includes(el.baseName);
+  });
+};
+
 
 
 /* ************************************************************************************************
@@ -111,6 +130,8 @@ const generateCacheName = (): string => {
  * @param includeToPrecache
  * @param excludeFilesFromPrecache
  * @returns string[]
+ * @throws
+ * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
 const buildPrecacheAssetPaths = (
   outDir: string,
@@ -119,6 +140,23 @@ const buildPrecacheAssetPaths = (
 ): string[] => {
   // init the list of assets
   const assets: string[] = ['/'];
+
+  // iterate over each asset that will be precached. Ensure to avoid the root path and files that
+  // should be excluded
+  includeToPrecache.forEach((path: string) => {
+    if (path !== '/') {
+      const el = __getPathElement(join(outDir, path));
+      if (el.isFile && !excludeFilesFromPrecache.includes(el.baseName)) {
+        assets.push(path);
+      } else {
+        assets.push(...__extractCacheableFilesFromDirectory(
+          outDir,
+          el.path,
+          excludeFilesFromPrecache,
+        ));
+      }
+    }
+  });
 
   // finally, return the completed list
   return assets;

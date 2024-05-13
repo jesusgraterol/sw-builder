@@ -21,6 +21,7 @@ import { buildTemplate } from '../template/index.js';
  * content cannot be parsed
  * - INVALID_CONFIG_VALUE: if any of the essential config values is invalid
  * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
+ * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
 const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   // load the configuration file
