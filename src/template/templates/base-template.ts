@@ -84,7 +84,7 @@ const cacheFirst = async (request) => {
 const deleteOldCaches = async () => {
  const keyList = await caches.keys();
  const cachesToDelete = keyList.filter((key) => key !== CACHE_NAME);
- await Promise.all(cachesToDelete.map(caches.delete));
+ await Promise.all(cachesToDelete.map((key) => caches.delete(key)));
 };
 
 
