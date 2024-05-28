@@ -42,6 +42,12 @@ Include the `sw-builder` binary in your `package.json` file:
 ```
 
 
+<br/>
+
+If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in your `public` directory so you can test the Service Worker's Registration while developing.
+
+
+
 
 <br/>
 
