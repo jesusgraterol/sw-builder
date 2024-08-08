@@ -34,8 +34,8 @@ const addResourcesToCache = async (resources) => {
 /**
 * All requests should be cached except for:
 * - Non-GET requests
-* - Requests with accept: application/json | text/plain (HTTP long-polling requests)
-* - Resposes with content-type: application/json | text/plain (HTTP long-polling requests)
+* - Requests with accept: application/json | text/plain (dynamic data)
+* - Resposes with content-type: application/json | text/plain (dynamic data)
 * @param {*} request
 * @param {*} response
 * @returns boolean
