@@ -40,7 +40,7 @@ const addResourcesToCache = async (resources) => {
 * @param {*} response
 * @returns boolean
 */
-const canRequestBeCached = async (request, response) => {
+const canRequestBeCached = (request, response) => {
   const accept = request.headers.get('accept');
   const contentType = response.headers.get('content-type');
   return request.method === 'GET'
