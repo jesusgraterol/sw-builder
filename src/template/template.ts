@@ -17,18 +17,19 @@ const __insertCacheName = (rawTemplate: string, cacheName: string): string => (
 );
 
 /**
- * Stringifies a given list of asset paths that will be pre-cached.
- * @param precacheAssets
+ * Stringifies a constant variable that contains an array.
+ * @param constantName
+ * @param elements
  * @returns string
  */
-const __stringifyPrecacheAssets = (precacheAssets: string[]): string => {
-  let assets: string = 'const PRECACHE_ASSETS = [\n';
-  assets += precacheAssets.reduce(
-    (prev, current, index) => `${prev}  '${current}'${index < precacheAssets.length - 1 ? ',\n' : ','}`,
+const stringifyArrayConstant = (constantName: string, elements: string[]): string => {
+  let variable: string = `const ${constantName} = [\n`;
+  variable += elements.reduce(
+    (prev, current, index) => `${prev}  '${current}'${index < elements.length - 1 ? ',\n' : ','}`,
     '',
   );
-  assets += '\n];';
-  return assets;
+  variable += '\n];';
+  return variable;
 };
 
 /**
@@ -38,7 +39,23 @@ const __stringifyPrecacheAssets = (precacheAssets: string[]): string => {
  * @returns string
  */
 const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) => (
-  rawTemplate.replace('const PRECACHE_ASSETS = [];', __stringifyPrecacheAssets(precacheAssets))
+  rawTemplate.replace(
+    'const PRECACHE_ASSETS = [];',
+    stringifyArrayConstant('PRECACHE_ASSETS', precacheAssets),
+  )
+);
+
+/**
+ * Inserts the exclude MIME Types content into the raw template.
+ * @param rawTemplate
+ * @param types
+ * @returns string
+ */
+const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) => (
+  rawTemplate.replace(
+    'const EXCLUDE_MIME_TYPES = [];',
+    stringifyArrayConstant('EXCLUDE_MIME_TYPES', types),
+  )
 );
 
 
@@ -53,15 +70,26 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
  * Builds the base template ready to be saved.
  * @param cacheName
  * @param precacheAssets
+ * @param excludeMIMETypes
  * @returns string
  */
 const __buildBaseTemplate = (
   cacheName: string,
   precacheAssets: string[],
-): string => __insertPrecacheAssets(
-  __insertCacheName(BASE_TEMPLATE, cacheName),
-  precacheAssets,
-);
+  excludeMIMETypes: string[],
+): string => {
+  // insert the cache name
+  let template = __insertCacheName(BASE_TEMPLATE, cacheName);
+
+  // insert the pre-cache assets
+  template = __insertPrecacheAssets(template, precacheAssets);
+
+  // insert the MIME types that will be excluded
+  template = __insertExcludeMIMETypes(template, excludeMIMETypes);
+
+  // finally, return the template
+  return template;
+};
 
 /**
  * Builds a Service Worker Template by name.
@@ -78,10 +106,11 @@ const buildTemplate = (
   template: ITemplateName,
   cacheName: string,
   precacheAssets: string[],
+  excludeMIMETypes: string[],
 ): string => {
   switch (template) {
     case 'base': {
-      return __buildBaseTemplate(cacheName, precacheAssets);
+      return __buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
     }
     default: {
       throw new Error(encodeError(`The template name '${template}' is not supported.`, ERRORS.INVALID_TEMPLATE_NAME));
@@ -97,5 +126,9 @@ const buildTemplate = (
  *                                         MODULE EXPORTS                                         *
  ************************************************************************************************ */
 export {
+  // helpers
+  stringifyArrayConstant,
+
+  // implementation
   buildTemplate,
 };
