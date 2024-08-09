@@ -56,6 +56,10 @@ const __validateConfigFile = (config: IBaseConfig): void => {
     console.log(config.excludeFilesFromPrecache);
     throw new Error(encodeError(`The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
   }
+  if (!Array.isArray(config.excludeMimeTypesFromCache)) {
+    console.log(config.excludeMimeTypesFromCache);
+    throw new Error(encodeError(`The excludeMimeTypesFromCache '${config.excludeFilesFromPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
+  }
 };
 
 /**
