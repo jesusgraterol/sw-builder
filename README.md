@@ -24,7 +24,11 @@ Create the `sw-builder.config.json` file in your project's root:
     "/splash.png"
   ],
   "excludeFilesFromPrecache": [
-    "some-ignorable-file.woff2",
+    "some-ignorable-file.woff2"
+  ],
+  "excludeMIMETypesFromCache": [
+    "application/json",
+    "text/plain"
   ]
 }
 ```

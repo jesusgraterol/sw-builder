@@ -28,7 +28,7 @@ const c = (config?: Partial<IBaseConfig>) => ({
   template: config?.template ?? 'base',
   includeToPrecache: config?.includeToPrecache ?? [],
   excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
-  excludeMimeTypesFromCache: config?.excludeMimeTypesFromCache ?? [],
+  excludeMIMETypesFromCache: config?.excludeMIMETypesFromCache ?? [],
 });
 
 

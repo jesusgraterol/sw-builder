@@ -37,7 +37,7 @@ interface IBaseConfig {
   excludeFilesFromPrecache: string[],
 
   // the list of MIME Types that won't be cached when the app sends HTTP requests
-  excludeMimeTypesFromCache: string[],
+  excludeMIMETypesFromCache: string[],
 }
 
 
