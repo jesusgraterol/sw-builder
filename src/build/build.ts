@@ -36,6 +36,7 @@ const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
       configuration.includeToPrecache,
       configuration.excludeFilesFromPrecache,
     ),
+    configuration.excludeMIMETypesFromCache,
   );
 
   // finally, save the file in the specified path
