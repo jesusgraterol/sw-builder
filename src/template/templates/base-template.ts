@@ -13,6 +13,9 @@ const CACHE_NAME = '';
 // assets that will be cached once the service worker is installed
 const PRECACHE_ASSETS = [];
 
+// the list of MIME Types that won't be cached when the app sends HTTP GET requests
+const EXCLUDE_MIME_TYPES = [];
+
 
 
 
@@ -32,31 +35,28 @@ const addResourcesToCache = async (resources) => {
 };
 
 /**
+ * Verifies if the value of the 'Accept' or 'Content-Type' header is cacheable.
+ * @param {*} contentTypeHeader
+ * @returns boolean
+ */
+const isMIMETypeCacheable = (contentTypeHeader) => (
+  contentTypeHeader === null
+  || EXCLUDE_MIME_TYPES.every((type) => !contentTypeHeader.includes(type))
+);
+
+/**
 * All requests should be cached except for:
 * - Non-GET requests
-* - Requests with accept: application/json | text/plain (dynamic data)
-* - Resposes with content-type: application/json | text/plain (dynamic data)
+* - Requests with MIME Types that are not included in EXCLUDE_MIME_TYPES
 * @param {*} request
 * @param {*} response
 * @returns boolean
 */
-const canRequestBeCached = (request, response) => {
-  const accept = request.headers.get('accept');
-  const contentType = response.headers.get('content-type');
-  return request.method === 'GET'
-    && (
-      accept === null
-      || (
-        !accept.includes('application/json') && !accept.includes('text/plain')
-      )
-    )
-    && (
-      contentType === null
-      || (
-        !contentType.includes('application/json') && !contentType.includes('text/plain')
-      )
-    );
-};
+const canRequestBeCached = (request, response) => (
+  request.method === 'GET'
+  && isMIMETypeCacheable(request.headers.get('accept'))
+  && isMIMETypeCacheable(response.headers.get('content-type'))
+);
 
 /**
 * Adds the request and its response to the cache.
@@ -113,7 +113,9 @@ const cacheFirst = async (request) => {
 const deleteOldCaches = async () => {
   const keyList = await caches.keys();
   const cachesToDelete = keyList.filter((key) => key !== CACHE_NAME);
-  await Promise.all(cachesToDelete.map((key) => caches.delete(key)));
+  if (cachesToDelete.length) {
+    await Promise.all(cachesToDelete.map((key) => caches.delete(key)));
+  }
 };
 
 
