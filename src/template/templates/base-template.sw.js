@@ -125,10 +125,13 @@ const deleteOldCaches = async () => {
 
 /**
 * Triggers when the Service Worker has been fetched and registered.
-* It takes care of adding the base resources to the cache.
+* It takes care of clearing and adding the new base resources to the cache.
 */
 self.addEventListener('install', (event) => {
-  event.waitUntil(addResourcesToCache(PRECACHE_ASSETS));
+  event.waitUntil(Promise.all([
+    addResourcesToCache(PRECACHE_ASSETS),
+    deleteOldCaches(),
+  ]));
 });
 
 /**
