@@ -1,8 +1,8 @@
-import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect } from 'vitest';
+import { describe, afterAll, test, expect } from 'vitest';
 import { deleteDirectory, deleteFile, isFile, writeJSONFile, writeTextFile } from 'fs-utils-sync';
 import { IBaseConfig, IModuleArgs } from '../shared/types.js';
-import { run } from './build.js';
-import { buildOutputPath } from '../utils/utils.js';
+import { run } from './index.js';
+import { buildOutputPath } from '../utils/index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -40,16 +40,10 @@ const c = (config?: Partial<IBaseConfig>) => ({
  ************************************************************************************************ */
 
 describe('Build', () => {
-  beforeAll(() => { });
-
   afterAll(() => {
     deleteFile(CONFIG_PATH);
     deleteDirectory(DIST_PATH);
   });
-
-  beforeEach(() => { });
-
-  afterEach(() => { });
 
   test('can build the Service Worker Base Template', () => {
     // create the config file

@@ -1,4 +1,4 @@
-import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
+import { describe, afterEach, test, expect, vi } from 'vitest';
 import { IPathElement, isDirectory, readJSONFile, getPathElement, readDirectory } from 'fs-utils-sync';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
@@ -10,7 +10,7 @@ import {
   readConfigFile,
   buildOutputPath,
   buildPrecacheAssetPaths,
-} from './utils.js';
+} from './index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -88,12 +88,6 @@ const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any)
  ************************************************************************************************ */
 
 describe('readConfigFile', () => {
-  beforeAll(() => { });
-
-  afterAll(() => { });
-
-  beforeEach(() => { });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -164,12 +158,6 @@ describe('generateCacheName', () => {
 
 
 describe('buildPrecacheAssetPaths', () => {
-  beforeAll(() => { });
-
-  afterAll(() => { });
-
-  beforeEach(() => { });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });

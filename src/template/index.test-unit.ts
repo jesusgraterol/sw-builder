@@ -1,18 +1,12 @@
-import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, vi } from 'vitest';
-import { buildTemplate, stringifyArrayConstant } from './template.js';
+import { describe, afterEach, test, expect, vi } from 'vitest';
 import { ERRORS } from '../shared/errors.js';
+import { buildTemplate, stringifyArrayConstant } from './index.js';
 
 /* ************************************************************************************************
  *                                             TESTS                                              *
  ************************************************************************************************ */
 
 describe('Template', () => {
-  beforeAll(() => { });
-
-  afterAll(() => { });
-
-  beforeEach(() => { });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });
