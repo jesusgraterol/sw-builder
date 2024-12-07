@@ -2,6 +2,12 @@
 import { join } from 'node:path';
 import { encodeError } from 'error-message-utils';
 import {
+  isArrayValid,
+  isObjectValid,
+  isStringValid,
+  generateRandomString,
+} from 'web-utils-kit';
+import {
   isDirectory,
   readJSONFile,
   getPathElement,
@@ -40,25 +46,25 @@ const OUTPUT_NAME: string = 'sw.js';
  * - INVALID_CONFIG_VALUE: if any of the essential config values is invalid
  */
 const __validateConfigFile = (config: IBaseConfig): void => {
-  if (!config || typeof config !== 'object') {
+  if (!isObjectValid(config)) {
     console.log(config);
     throw new Error(encodeError('The extracted configuration is not a valid object.', ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (typeof config.outDir !== 'string' || !config.outDir.length || !isDirectory(config.outDir)) {
+  if (!isStringValid(config.outDir, 1) || !isDirectory(config.outDir)) {
     throw new Error(encodeError(`The outDir '${config.outDir}' is not a directory or doesn't exist.`, ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (typeof config.template !== 'string' || !config.template.length) {
+  if (!isStringValid(config.template, 1)) {
     throw new Error(encodeError(`The template '${config.template}' is not a valid template name.`, ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (!Array.isArray(config.includeToPrecache) || !config.includeToPrecache.length) {
+  if (!isArrayValid(config.includeToPrecache)) {
     console.log(config.includeToPrecache);
     throw new Error(encodeError(`The includeToPrecache '${config.includeToPrecache}' list is invalid or empty.`, ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (!Array.isArray(config.excludeFilesFromPrecache)) {
+  if (!isArrayValid(config.excludeFilesFromPrecache, true)) {
     console.log(config.excludeFilesFromPrecache);
     throw new Error(encodeError(`The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (!Array.isArray(config.excludeMIMETypesFromCache)) {
+  if (!isArrayValid(config.excludeMIMETypesFromCache, true)) {
     console.log(config.excludeMIMETypesFromCache);
     throw new Error(encodeError(`The excludeMIMETypesFromCache '${config.excludeMIMETypesFromCache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
   }
@@ -132,15 +138,10 @@ const readConfigFile = (configPath: string): IBaseConfig => {
  * Generates a randomly generated name to be used for the CacheStorage
  * @returns string
  */
-const generateCacheName = (): string => {
-  let nm: string = '';
-  let counter: number = 0;
-  while (counter < CACHE_NAME_LENGTH) {
-    nm += CACHE_NAME_CHARACTERS.charAt(Math.floor(Math.random() * CACHE_NAME_CHARACTERS.length));
-    counter += 1;
-  }
-  return nm;
-};
+const generateCacheName = (): string => generateRandomString(
+  CACHE_NAME_LENGTH,
+  CACHE_NAME_CHARACTERS,
+);
 
 /**
  * Puts the list of all the assets that must be cached based on the include and exclude lists.

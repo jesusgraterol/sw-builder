@@ -53,6 +53,7 @@
   "dependencies": {
     "argv-utils": "^1.0.3",
     "error-message-utils": "^1.1.2",
-    "fs-utils-sync": "^1.0.3"
+    "fs-utils-sync": "^1.0.3",
+    "web-utils-kit": "^1.0.3"
   }
 }
