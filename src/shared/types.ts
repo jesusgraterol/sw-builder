@@ -9,7 +9,7 @@ import { IBaseParsedArgs } from 'argv-utils';
  * The args that can bt passed to the sw-builder CLI
  */
 interface IModuleArgs extends IBaseParsedArgs {
-  config?: string
+  config?: string;
 }
 
 /**
@@ -20,25 +20,25 @@ type ITemplateName = 'base';
 
 /**
  * Base Configuration
- * The configuration required to build the 'base' template. This interface should be extended by
- * other templates.
+ * The configuration required to build the 'base' template. This type should be turned into a
+ * discriminated union once more templates are introduced.
  */
-interface IBaseConfig {
+type IBaseConfig = {
   // the dir path in which the build's output is placed
-  outDir: string,
+  outDir: string;
 
   // the name of the template that will be generated
-  template: ITemplateName,
+  template: ITemplateName;
 
   // the list of asset paths that will be traversed and included in the cache
-  includeToPrecache: string[],
+  includeToPrecache: string[];
 
   // the list of file names that will be ignored
-  excludeFilesFromPrecache: string[],
+  excludeFilesFromPrecache: string[];
 
   // the list of MIME Types that won't be cached when the app sends HTTP GET requests
-  excludeMIMETypesFromCache: string[],
-}
+  excludeMIMETypesFromCache: string[];
+};
 
 
 

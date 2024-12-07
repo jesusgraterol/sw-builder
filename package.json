@@ -1,6 +1,6 @@
 {
   "name": "sw-builder",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The sw-builder package automates the creation of your Application's Service Worker, which pre-caches your build. This leads to a better overall performance and enables users to access your PWA without an Internet connection.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,17 +42,17 @@
   },
   "homepage": "https://github.com/jesusgraterol/sw-builder#readme",
   "devDependencies": {
-    "@types/node": "^20.12.11",
-    "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.8.0",
+    "@types/node": "^20.17.9",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
-    "ts-lib-builder": "^1.0.3",
-    "typescript": "^5.4.5",
+    "ts-lib-builder": "^1.0.5",
+    "typescript": "^5.7.2",
     "vitest": "^1.6.0"
   },
   "dependencies": {
-    "argv-utils": "^1.0.2",
-    "error-message-utils": "^1.0.2",
-    "fs-utils-sync": "^1.0.1"
+    "argv-utils": "^1.0.3",
+    "error-message-utils": "^1.1.2",
+    "fs-utils-sync": "^1.0.3"
   }
 }
