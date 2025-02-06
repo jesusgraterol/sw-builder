@@ -88,7 +88,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
 
 ## Templates
 
-- [`base(base-template.sw.js`)](https://github.com/jesusgraterol/sw-builder/blob/main/src/template/templates/base-template.sw.js)
+- [`base`](https://github.com/jesusgraterol/sw-builder/blob/main/src/template/templates/base-template.sw.js)
 
 
 
