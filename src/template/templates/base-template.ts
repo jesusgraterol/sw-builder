@@ -41,7 +41,7 @@ const addResourcesToCache = async (resources) => {
  */
 const isMIMETypeCacheable = (contentTypeHeader) => (
   contentTypeHeader === null
-  || EXCLUDE_MIME_TYPES.every((type) => !contentTypeHeader.includes(type))
+  || !EXCLUDE_MIME_TYPES.some((type) => contentTypeHeader.includes(type))
 );
 
 /**
@@ -53,7 +53,9 @@ const isMIMETypeCacheable = (contentTypeHeader) => (
 * @returns boolean
 */
 const canRequestBeCached = (request, response) => (
-  request.method === 'GET'
+  request.ok
+  && request.method === 'GET'
+  && response.type !== 'opaque'
   && isMIMETypeCacheable(request.headers.get('accept'))
   && isMIMETypeCacheable(response.headers.get('content-type'))
 );
@@ -131,10 +133,7 @@ const deleteOldCaches = async () => {
 * It takes care of clearing and adding the new base resources to the cache.
 */
 self.addEventListener('install', (event) => {
-  event.waitUntil(Promise.all([
-    addResourcesToCache(PRECACHE_ASSETS),
-    deleteOldCaches(),
-  ]));
+  event.waitUntil(deleteOldCaches().then(() => addResourcesToCache(PRECACHE_ASSETS)));
 });
 
 /**
