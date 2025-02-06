@@ -50,7 +50,9 @@ const isMIMETypeCacheable = (contentTypeHeader) => (
 * @returns boolean
 */
 const canRequestBeCached = (request, response) => (
-  request.method === 'GET'
+  request.ok
+  && request.method === 'GET'
+  && response.type !== 'opaque'
   && isMIMETypeCacheable(request.headers.get('accept'))
   && isMIMETypeCacheable(response.headers.get('content-type'))
 );
