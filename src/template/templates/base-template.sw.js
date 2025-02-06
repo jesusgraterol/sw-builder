@@ -128,10 +128,7 @@ const deleteOldCaches = async () => {
 * It takes care of clearing and adding the new base resources to the cache.
 */
 self.addEventListener('install', (event) => {
-  event.waitUntil(Promise.all([
-    addResourcesToCache(PRECACHE_ASSETS),
-    deleteOldCaches(),
-  ]));
+  event.waitUntil(deleteOldCaches().then(() => addResourcesToCache(PRECACHE_ASSETS)));
 });
 
 /**
