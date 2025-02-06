@@ -38,7 +38,7 @@ const addResourcesToCache = async (resources) => {
  */
 const isMIMETypeCacheable = (contentTypeHeader) => (
   contentTypeHeader === null
-  || EXCLUDE_MIME_TYPES.every((type) => !contentTypeHeader.includes(type))
+  || !EXCLUDE_MIME_TYPES.some((type) => contentTypeHeader.includes(type))
 );
 
 /**
