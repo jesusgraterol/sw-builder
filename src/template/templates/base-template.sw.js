@@ -22,13 +22,15 @@ const EXCLUDE_MIME_TYPES = [];
 ************************************************************************************************ */
 
 /**
-* Adds the given list of resource URLs to the cache.
-* @param {*} resources
+ * Invoked when the Service Worker has been installed. It takes care of adding the base resources
+ * to the cache (if any).
 * @returns Promise<void>
 */
-const addResourcesToCache = async (resources) => {
-  const cache = await caches.open(CACHE_NAME);
-  await cache.addAll(resources);
+const precacheResources = async () => {
+  if (PRECACHE_ASSETS.length > 0) {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(PRECACHE_ASSETS);
+  }
 };
 
 /**
@@ -130,7 +132,7 @@ const deleteOldCaches = async () => {
 * It takes care of clearing and adding the new base resources to the cache.
 */
 self.addEventListener('install', (event) => {
-  event.waitUntil(deleteOldCaches().then(() => addResourcesToCache(PRECACHE_ASSETS)));
+  event.waitUntil(deleteOldCaches().then(() => precacheResources()));
 });
 
 /**
@@ -139,10 +141,7 @@ self.addEventListener('install', (event) => {
 * pages that were controlled by the previous version of the worker (if any).
 */
 self.addEventListener('activate', (event) => {
-  event.waitUntil(Promise.all([
-    self.clients.claim(),
-    deleteOldCaches(),
-  ]));
+  event.waitUntil(self.clients.claim().then(() => deleteOldCaches()));
 });
 
 /**
