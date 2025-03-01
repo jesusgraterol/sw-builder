@@ -184,8 +184,8 @@ describe('buildPrecacheAssetPaths', () => {
     ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
   });
 
-  test('includes the root path / even if it is not provided', () => {
-    expect(buildPrecacheAssetPaths(OUT_DIR, [], [])).toStrictEqual(['/']);
+  test('returns an empty list if the precaching is not enabled', () => {
+    expect(buildPrecacheAssetPaths(OUT_DIR, [], [])).toStrictEqual([]);
   });
 
   test('can build a basic list of assets without exclusions', () => {

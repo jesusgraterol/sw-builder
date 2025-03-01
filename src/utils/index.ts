@@ -56,9 +56,9 @@ const __validateConfigFile = (config: IBaseConfig): void => {
   if (!isStringValid(config.template, 1)) {
     throw new Error(encodeError(`The template '${config.template}' is not a valid template name.`, ERRORS.INVALID_CONFIG_VALUE));
   }
-  if (!isArrayValid(config.includeToPrecache)) {
+  if (!isArrayValid(config.includeToPrecache, true)) {
     console.log(config.includeToPrecache);
-    throw new Error(encodeError(`The includeToPrecache '${config.includeToPrecache}' list is invalid or empty.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(encodeError(`The includeToPrecache '${config.includeToPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
   }
   if (!isArrayValid(config.excludeFilesFromPrecache, true)) {
     console.log(config.excludeFilesFromPrecache);
@@ -145,6 +145,7 @@ const generateCacheName = (): string => generateRandomString(
 
 /**
  * Puts the list of all the assets that must be cached based on the include and exclude lists.
+ * If there are no items to precache, an empty list will be returned.
  * @param outDir
  * @param includeToPrecache
  * @param excludeFilesFromPrecache
@@ -157,6 +158,11 @@ const buildPrecacheAssetPaths = (
   includeToPrecache: string[],
   excludeFilesFromPrecache: string[],
 ): string[] => {
+  // ensure there are elements to precache
+  if (includeToPrecache.length === 0) {
+    return [];
+  }
+
   // init the list of assets
   const assets: string[] = ['/'];
 
