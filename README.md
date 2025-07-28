@@ -8,7 +8,7 @@ The `sw-builder` package automates the creation of your Application's Service Wo
 
 Install the package:
 ```bash
-npm install -D sw-builder
+npm i -D sw-builder
 ```
 
 Create the `sw-builder.config.json` file in your project's root:
@@ -59,6 +59,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
 
 <details>
   <summary><code>IBaseConfig</code></summary>
+  <br/>
   
   The configuration required to build the 'base' template. This type should be turned into a discriminated union once more templates are introduced.
   ```typescript
@@ -79,6 +80,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
     excludeMIMETypesFromCache: string[];
   };
   ```
+  <br/>
 </details>
 
 
@@ -122,26 +124,3 @@ npm run test:integration
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-
-
-
-
-<br/>
-
-## Deployment
-
-Install dependencies:
-```bash
-npm install
-```
-
-Build the project:
-```bash
-npm start
-```
-
-Publish to `npm`:
-```bash
-npm publish
-```

@@ -1,12 +1,7 @@
 /* eslint-disable no-console */
 import { join } from 'node:path';
 import { encodeError } from 'error-message-utils';
-import {
-  isArrayValid,
-  isObjectValid,
-  isStringValid,
-  generateRandomString,
-} from 'web-utils-kit';
+import { isArrayValid, isObjectValid, isStringValid, generateRandomString } from 'web-utils-kit';
 import {
   isDirectory,
   readJSONFile,
@@ -30,10 +25,6 @@ const CACHE_NAME_LENGTH: number = 10;
 // the name of the file that is built and placed in the outDir
 const OUTPUT_NAME: string = 'sw.js';
 
-
-
-
-
 /* ************************************************************************************************
  *                                            HELPERS                                             *
  ************************************************************************************************ */
@@ -48,25 +39,55 @@ const OUTPUT_NAME: string = 'sw.js';
 const __validateConfigFile = (config: IBaseConfig): void => {
   if (!isObjectValid(config)) {
     console.log(config);
-    throw new Error(encodeError('The extracted configuration is not a valid object.', ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        'The extracted configuration is not a valid object.',
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
   if (!isStringValid(config.outDir, 1) || !isDirectory(config.outDir)) {
-    throw new Error(encodeError(`The outDir '${config.outDir}' is not a directory or doesn't exist.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        `The outDir '${config.outDir}' is not a directory or doesn't exist.`,
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
   if (!isStringValid(config.template, 1)) {
-    throw new Error(encodeError(`The template '${config.template}' is not a valid template name.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        `The template '${config.template}' is not a valid template name.`,
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
   if (!isArrayValid(config.includeToPrecache, true)) {
     console.log(config.includeToPrecache);
-    throw new Error(encodeError(`The includeToPrecache '${config.includeToPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        `The includeToPrecache '${config.includeToPrecache}' list is invalid.`,
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
   if (!isArrayValid(config.excludeFilesFromPrecache, true)) {
     console.log(config.excludeFilesFromPrecache);
-    throw new Error(encodeError(`The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        `The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`,
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
   if (!isArrayValid(config.excludeMIMETypesFromCache, true)) {
     console.log(config.excludeMIMETypesFromCache);
-    throw new Error(encodeError(`The excludeMIMETypesFromCache '${config.excludeMIMETypesFromCache}' list is invalid.`, ERRORS.INVALID_CONFIG_VALUE));
+    throw new Error(
+      encodeError(
+        `The excludeMIMETypesFromCache '${config.excludeMIMETypesFromCache}' list is invalid.`,
+        ERRORS.INVALID_CONFIG_VALUE,
+      ),
+    );
   }
 };
 
@@ -80,7 +101,9 @@ const __validateConfigFile = (config: IBaseConfig): void => {
 const __getPathElement = (path: string): IPathElement => {
   const el = getPathElement(path);
   if (el === null || (!el.isDirectory && !el.isFile)) {
-    throw new Error(encodeError(`The asset '${path}' is not a path element.`, ERRORS.NOT_A_PATH_ELEMENT));
+    throw new Error(
+      encodeError(`The asset '${path}' is not a path element.`, ERRORS.NOT_A_PATH_ELEMENT),
+    );
   }
   return el;
 };
@@ -110,10 +133,6 @@ const __extractCacheableFilesFromDirectory = (
   return content.map((filePath: string) => filePath.replace(outDir, ''));
 };
 
-
-
-
-
 /* ************************************************************************************************
  *                                         IMPLEMENTATION                                         *
  ************************************************************************************************ */
@@ -138,10 +157,8 @@ const readConfigFile = (configPath: string): IBaseConfig => {
  * Generates a randomly generated name to be used for the CacheStorage
  * @returns string
  */
-const generateCacheName = (): string => generateRandomString(
-  CACHE_NAME_LENGTH,
-  CACHE_NAME_CHARACTERS,
-);
+const generateCacheName = (): string =>
+  generateRandomString(CACHE_NAME_LENGTH, CACHE_NAME_CHARACTERS);
 
 /**
  * Puts the list of all the assets that must be cached based on the include and exclude lists.
@@ -174,11 +191,9 @@ const buildPrecacheAssetPaths = (
       if (el.isFile && !excludeFilesFromPrecache.includes(el.baseName)) {
         assets.push(path);
       } else {
-        assets.push(...__extractCacheableFilesFromDirectory(
-          outDir,
-          el.path,
-          excludeFilesFromPrecache,
-        ));
+        assets.push(
+          ...__extractCacheableFilesFromDirectory(outDir, el.path, excludeFilesFromPrecache),
+        );
       }
     }
   });
@@ -193,10 +208,6 @@ const buildPrecacheAssetPaths = (
  * @returns string
  */
 const buildOutputPath = (outDir: string): string => join(outDir, OUTPUT_NAME);
-
-
-
-
 
 /* ************************************************************************************************
  *                                         MODULE EXPORTS                                         *

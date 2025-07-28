@@ -13,9 +13,8 @@ import { BASE_TEMPLATE } from './templates/base-template.js';
  * @param cacheName
  * @returns string
  */
-const __insertCacheName = (rawTemplate: string, cacheName: string): string => (
-  rawTemplate.replace('const CACHE_NAME = \'\';', `const CACHE_NAME = '${cacheName}';`)
-);
+const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
+  rawTemplate.replace("const CACHE_NAME = '';", `const CACHE_NAME = '${cacheName}';`);
 
 /**
  * Stringifies a constant variable that contains an array.
@@ -39,12 +38,11 @@ const stringifyArrayConstant = (constantName: string, elements: string[]): strin
  * @param precacheAssets
  * @returns string
  */
-const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) => (
+const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =>
   rawTemplate.replace(
     'const PRECACHE_ASSETS = [];',
     stringifyArrayConstant('PRECACHE_ASSETS', precacheAssets),
-  )
-);
+  );
 
 /**
  * Inserts the exclude MIME Types content into the raw template.
@@ -52,16 +50,11 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
  * @param types
  * @returns string
  */
-const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) => (
+const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
   rawTemplate.replace(
     'const EXCLUDE_MIME_TYPES = [];',
     stringifyArrayConstant('EXCLUDE_MIME_TYPES', types),
-  )
-);
-
-
-
-
+  );
 
 /* ************************************************************************************************
  *                                         IMPLEMENTATION                                         *
@@ -114,14 +107,15 @@ const buildTemplate = (
       return __buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
     }
     default: {
-      throw new Error(encodeError(`The template name '${template}' is not supported.`, ERRORS.INVALID_TEMPLATE_NAME));
+      throw new Error(
+        encodeError(
+          `The template name '${template}' is not supported.`,
+          ERRORS.INVALID_TEMPLATE_NAME,
+        ),
+      );
     }
   }
 };
-
-
-
-
 
 /* ************************************************************************************************
  *                                         MODULE EXPORTS                                         *

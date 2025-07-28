@@ -40,15 +40,7 @@ type IBaseConfig = {
   excludeMIMETypesFromCache: string[];
 };
 
-
-
-
-
 /* ************************************************************************************************
  *                                         MODULE EXPORTS                                         *
  ************************************************************************************************ */
-export type {
-  IModuleArgs,
-  ITemplateName,
-  IBaseConfig,
-};
+export type { IModuleArgs, ITemplateName, IBaseConfig };
