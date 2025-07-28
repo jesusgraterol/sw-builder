@@ -1,12 +1,12 @@
 {
   "name": "sw-builder",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "The sw-builder package automates the creation of your Application's Service Worker, which pre-caches your build. This leads to a better overall performance and enables users to access your PWA without an Internet connection.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "start": "ts-lib-builder --tsconfig=tsconfig.build.json",
+    "build": "ts-lib-builder --tsconfig=tsconfig.build.json",
     "test": "echo \"Error: tests are executed with  npm run test:(integration|unit)\" && exit 1",
     "test:integration": "vitest run --config vitest.test-integration.config.ts",
     "test:unit": "vitest run --config vitest.test-unit.config.ts",
@@ -42,18 +42,20 @@
   },
   "homepage": "https://github.com/jesusgraterol/sw-builder#readme",
   "devDependencies": {
-    "@types/node": "^20.17.17",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint-config-airbnb-typescript": "^18.0.0",
-    "ts-lib-builder": "^1.0.5",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.7"
+    "@types/node": "20.17.17",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "eslint-config-airbnb-typescript": "18.0.0",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.6.2",
+    "ts-lib-builder": "1.0.7",
+    "typescript": "5.7.3",
+    "vitest": "3.0.7"
   },
   "dependencies": {
-    "argv-utils": "^1.0.3",
-    "error-message-utils": "^1.1.2",
-    "fs-utils-sync": "^1.0.3",
-    "web-utils-kit": "^1.0.5"
+    "argv-utils": "1.0.4",
+    "error-message-utils": "1.1.5",
+    "fs-utils-sync": "1.0.5",
+    "web-utils-kit": "1.0.6"
   }
 }

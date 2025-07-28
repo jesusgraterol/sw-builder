@@ -14,10 +14,6 @@ const DIST_PATH: string = 'test-dist';
 // the config's test path
 const CONFIG_PATH: string = 'sw-builder.config.json';
 
-
-
-
-
 /* ************************************************************************************************
  *                                            HELPERS                                             *
  ************************************************************************************************ */
@@ -31,10 +27,6 @@ const c = (config?: Partial<IBaseConfig>) => ({
   excludeMIMETypesFromCache: config?.excludeMIMETypesFromCache ?? [],
 });
 
-
-
-
-
 /* ************************************************************************************************
  *                                             TESTS                                              *
  ************************************************************************************************ */
@@ -47,12 +39,12 @@ describe('Build', () => {
 
   test('can build the Service Worker Base Template', () => {
     // create the config file
-    writeJSONFile('sw-builder.config.json', c({
-      includeToPrecache: [
-        '/index.html',
-        '/assets',
-      ],
-    }));
+    writeJSONFile(
+      'sw-builder.config.json',
+      c({
+        includeToPrecache: ['/index.html', '/assets'],
+      }),
+    );
 
     // create the cacheable files
     writeTextFile(`${DIST_PATH}/index.html`, 'Test Index File');

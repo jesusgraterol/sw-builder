@@ -18,13 +18,8 @@ describe('Template', () => {
     });
 
     test('can build a base template', () => {
-      const template = buildTemplate(
-        'base',
-        'testcache',
-        [],
-        [],
-      );
-      expect(template).toContain('const CACHE_NAME = \'testcache\';');
+      const template = buildTemplate('base', 'testcache', [], []);
+      expect(template).toContain("const CACHE_NAME = 'testcache';");
       expect(template).toContain(stringifyArrayConstant('PRECACHE_ASSETS', []));
       expect(template).toContain(stringifyArrayConstant('EXCLUDE_MIME_TYPES', []));
     });
@@ -36,17 +31,18 @@ describe('Template', () => {
         ['/', '/assets/', '/assets/bundle.js', '/index.html'],
         ['application/json', 'text/plain'],
       );
-      expect(template).toContain('const CACHE_NAME = \'testcache\';');
-      expect(template).toContain(stringifyArrayConstant('PRECACHE_ASSETS', [
-        '/',
-        '/assets/',
-        '/assets/bundle.js',
-        '/index.html',
-      ]));
-      expect(template).toContain(stringifyArrayConstant('EXCLUDE_MIME_TYPES', [
-        'application/json',
-        'text/plain',
-      ]));
+      expect(template).toContain("const CACHE_NAME = 'testcache';");
+      expect(template).toContain(
+        stringifyArrayConstant('PRECACHE_ASSETS', [
+          '/',
+          '/assets/',
+          '/assets/bundle.js',
+          '/index.html',
+        ]),
+      );
+      expect(template).toContain(
+        stringifyArrayConstant('EXCLUDE_MIME_TYPES', ['application/json', 'text/plain']),
+      );
     });
   });
 });

@@ -1,5 +1,11 @@
 import { describe, afterEach, test, expect, vi } from 'vitest';
-import { IPathElement, isDirectory, readJSONFile, getPathElement, readDirectory } from 'fs-utils-sync';
+import {
+  IPathElement,
+  isDirectory,
+  readJSONFile,
+  getPathElement,
+  readDirectory,
+} from 'fs-utils-sync';
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import {
@@ -19,10 +25,6 @@ import {
 // mock value for outDir
 const OUT_DIR: string = 'test-dist';
 
-
-
-
-
 /* ************************************************************************************************
  *                                             MOCKS                                              *
  ************************************************************************************************ */
@@ -34,10 +36,6 @@ vi.mock('fs-utils-sync', () => ({
   getPathElement: vi.fn(),
   readDirectory: vi.fn(),
 }));
-
-
-
-
 
 /* ************************************************************************************************
  *                                            HELPERS                                             *
@@ -79,10 +77,6 @@ const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any)
   }
 };
 
-
-
-
-
 /* ************************************************************************************************
  *                                             TESTS                                              *
  ************************************************************************************************ */
@@ -98,7 +92,7 @@ describe('readConfigFile', () => {
     expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
   });
 
-  test('throws if the outDir is invalid or the directory doesn\'t exist', () => {
+  test("throws if the outDir is invalid or the directory doesn't exist", () => {
     // @ts-ignore
     readJSONFile.mockReturnValue(c({ outDir: undefined }));
     expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
@@ -137,13 +131,11 @@ describe('readConfigFile', () => {
   });
 });
 
-
-
-
-
 describe('generateCacheName', () => {
   test('can generate a valid cache name', () => {
-    expect(new RegExp(`^[${CACHE_NAME_CHARACTERS}]{${CACHE_NAME_LENGTH}}$`).test(generateCacheName())).toBeTruthy();
+    expect(
+      new RegExp(`^[${CACHE_NAME_CHARACTERS}]{${CACHE_NAME_LENGTH}}$`).test(generateCacheName()),
+    ).toBeTruthy();
   });
 
   test('generates a different name every time', () => {
@@ -153,24 +145,16 @@ describe('generateCacheName', () => {
   });
 });
 
-
-
-
-
 describe('buildPrecacheAssetPaths', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   test('throws if an asset does not exist', () => {
-    mockGetPathElement([
-      pe({ baseName: '/index.html', isFile: true }),
-      null,
-    ]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, [
-      '/index.html',
-      '/app.js',
-    ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
+    mockGetPathElement([pe({ baseName: '/index.html', isFile: true }), null]);
+    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+      ERRORS.NOT_A_PATH_ELEMENT,
+    );
   });
 
   test('throws if an asset is a symbolic link', () => {
@@ -178,10 +162,9 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: '/index.html', isFile: true }),
       pe({ baseName: '/app.js', isSymbolicLink: true }),
     ]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, [
-      '/index.html',
-      '/app.js',
-    ], [])).toThrowError(ERRORS.NOT_A_PATH_ELEMENT);
+    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+      ERRORS.NOT_A_PATH_ELEMENT,
+    );
   });
 
   test('returns an empty list if the precaching is not enabled', () => {
@@ -204,12 +187,9 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: 'some-img.png', isFile: true }),
       pe({ baseName: 'some-other-img.jpg', isFile: true }),
     ]);
-    expect(buildPrecacheAssetPaths(OUT_DIR, [
-      '/index.html',
-      '/styles.css',
-      '/app.js',
-      '/img',
-    ], [])).toStrictEqual([
+    expect(
+      buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/styles.css', '/app.js', '/img'], []),
+    ).toStrictEqual([
       '/',
       '/index.html',
       '/styles.css',
@@ -235,24 +215,15 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: 'some-img.png', isFile: true }),
       pe({ baseName: 'some-other-img.jpg', isFile: true }),
     ]);
-    expect(buildPrecacheAssetPaths(OUT_DIR, [
-      '/index.html',
-      '/styles.css',
-      '/app.js',
-      '/img',
-    ], ['some-other-img.jpg'])).toStrictEqual([
-      '/',
-      '/index.html',
-      '/styles.css',
-      '/app.js',
-      '/img/some-img.png',
-    ]);
+    expect(
+      buildPrecacheAssetPaths(
+        OUT_DIR,
+        ['/index.html', '/styles.css', '/app.js', '/img'],
+        ['some-other-img.jpg'],
+      ),
+    ).toStrictEqual(['/', '/index.html', '/styles.css', '/app.js', '/img/some-img.png']);
   });
 });
-
-
-
-
 
 describe('buildOutputPath', () => {
   test('can build the output path based on the outDir', () => {

@@ -43,13 +43,7 @@ const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   writeTextFile(buildOutputPath(configuration.outDir), template);
 };
 
-
-
-
-
 /* ************************************************************************************************
  *                                         MODULE EXPORTS                                         *
  ************************************************************************************************ */
-export {
-  run,
-};
+export { run };
