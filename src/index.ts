@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 import process from 'node:process';
 import { parseArgs } from 'argv-utils';
 import { run } from './build/index.js';
