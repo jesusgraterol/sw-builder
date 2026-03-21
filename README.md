@@ -110,6 +110,9 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
 
 ## Tests
 ```bash
+# unit and integration tests
+npm run test
+
 # unit tests
 npm run test:unit
 
