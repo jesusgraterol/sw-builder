@@ -1,4 +1,8 @@
+import { z } from 'zod';
 import { IBaseParsedArgs } from 'argv-utils';
+
+// the name of the environment in which the sw-builder is running
+export type IEnvironment = 'development' | 'staging' | 'production';
 
 /**
  * Module Args
@@ -6,13 +10,17 @@ import { IBaseParsedArgs } from 'argv-utils';
  */
 export interface IModuleArgs extends IBaseParsedArgs {
   config?: string;
+  environment?: IEnvironment;
+  firebaseConfigProcessEnvKey?: string;
 }
 
 /**
  * Template Name
  * The list of templates supported by the sw-builder.
  */
-export type ITemplateName = 'base';
+export const TemplateNameSchema = z.enum(['base', 'firebase-fcm']);
+
+export type ITemplateName = z.infer<typeof TemplateNameSchema>;
 
 /**
  * Base Configuration

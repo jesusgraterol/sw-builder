@@ -7,11 +7,13 @@ The `sw-builder` package automates the creation of your Application's Service Wo
 ## Getting Started
 
 Install the package:
+
 ```bash
 npm i -D sw-builder
 ```
 
 Create the `sw-builder.config.json` file in your project's root:
+
 ```json
 {
   "outDir": "dist",
@@ -35,6 +37,7 @@ Create the `sw-builder.config.json` file in your project's root:
 ```
 
 Include the `sw-builder` binary in your `package.json` file:
+
 ```json
 ...
 "scripts": {
@@ -63,6 +66,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
   <br/>
   
   The configuration required to build the 'base' template. This type should be turned into a discriminated union once more templates are introduced.
+
   ```typescript
   type IBaseConfig = {
     // the dir path in which the build's output is placed
@@ -80,6 +84,25 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
     // the list of MIME Types that won't be cached when the app sends HTTP GET requests
     excludeMIMETypesFromCache: string[];
   };
+  ```
+  <br/>
+</details>
+
+<details>
+  <summary><code>IFirebaseOptions</code></summary>
+  <br/>
+  
+  The options object needed to initialize the Firebase project.
+
+  ```typescript
+  type IFirebaseOptions = {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+  }
   ```
   <br/>
 </details>

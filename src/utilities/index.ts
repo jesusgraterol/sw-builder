@@ -2,9 +2,4 @@
 // ...
 
 // fns
-export {
-  readConfigFile,
-  generateCacheName,
-  buildPrecacheAssetPaths,
-  buildOutputPath,
-} from './utilities.js';
+export { generateCacheName, buildPrecacheAssetPaths, buildOutputPath } from './utilities.js';

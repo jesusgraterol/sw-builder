@@ -1,27 +1,30 @@
 import { writeTextFile } from 'fs-utils-sync';
+
 import { IModuleArgs } from '../shared/types.js';
-import {
-  buildOutputPath,
-  buildPrecacheAssetPaths,
-  generateCacheName,
-  readConfigFile,
-} from '../utilities/index.js';
+import { buildOutputPath, buildPrecacheAssetPaths, generateCacheName } from '../utilities/index.js';
+import { readConfigFile } from '../config/config.js';
 import { buildTemplate } from '../template/index.js';
 
 /**
  * Executes the sw-builder script and builds the Service Worker based on the configuration.
  * @param args
  * @throws
- * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
- * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid or the JSON
- * content cannot be parsed
- * - INVALID_CONFIG_VALUE: if any of the essential config values is invalid
- * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
- * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
+ * - FAILED_TO_READ_BASE_CONFIG: if the base configuration file could not be read or parsed.
+ * - INVALID_FIREBASE_CONFIG_PROCESS_ENV_KEY: if the provided env var key is invalid or not set.
+ * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
+ * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
+ * - FAILED_TO_BUILD_CONFIG: if the configuration file could not be read or parsed.
+ * - ...
+ * - ...
+ * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if data is not a valid string.
  */
-export const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
+export const run = ({
+  config = 'sw-builder.config.json',
+  environment,
+  firebaseConfigProcessEnvKey,
+}: IModuleArgs): void => {
   // load the configuration file
-  const configuration = readConfigFile(config);
+  const configuration = readConfigFile(config, environment, firebaseConfigProcessEnvKey);
 
   // build the Service Worker's Template
   const template = buildTemplate(
@@ -33,6 +36,7 @@ export const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void =>
       configuration.excludeFilesFromPrecache,
     ),
     configuration.excludeMIMETypesFromCache,
+    'firebaseOptions' in configuration ? configuration.firebaseOptions : undefined,
   );
 
   // finally, save the file in the specified path

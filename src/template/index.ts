@@ -1,6 +1,8 @@
 import { Exception } from 'error-message-utils';
+
 import type { ITemplateName } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
+import { IFirebaseOptions } from '../config/index.js';
 import { BASE_TEMPLATE } from './templates/base-template.js';
 
 /* ************************************************************************************************
@@ -9,8 +11,8 @@ import { BASE_TEMPLATE } from './templates/base-template.js';
 
 /**
  * Inserts the freshly generated cacheName into the raw template.
- * @param rawTemplate
- * @param cacheName
+ * @param rawTemplate The raw template in which the cacheName will be inserted
+ * @param cacheName The name of the cache that will be used in the Service Worker
  * @returns The raw template with the cacheName inserted
  */
 const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
@@ -18,8 +20,8 @@ const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
 
 /**
  * Stringifies a constant variable that contains an array.
- * @param constantName
- * @param elements
+ * @param constantName The name of the constant variable
+ * @param elements The elements of the array
  * @returns The stringified constant variable
  */
 export const stringifyArrayConstant = (constantName: string, elements: string[]): string => {
@@ -34,8 +36,8 @@ export const stringifyArrayConstant = (constantName: string, elements: string[])
 
 /**
  * Inserts the pre-cache assets content into the raw template.
- * @param rawTemplate
- * @param precacheAssets
+ * @param rawTemplate The raw template in which the pre-cache assets will be inserted
+ * @param precacheAssets The list of assets that will be precached by the Service Worker
  * @returns The raw template with the pre-cache assets inserted
  */
 const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =>
@@ -46,8 +48,8 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
 
 /**
  * Inserts the exclude MIME Types content into the raw template.
- * @param rawTemplate
- * @param types
+ * @param rawTemplate The raw template in which the exclude MIME types will be inserted
+ * @param types The list of MIME Types that will be excluded from the cache
  * @returns The raw template with the exclude MIME types inserted
  */
 const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
@@ -62,9 +64,9 @@ const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
 
 /**
  * Builds the base template ready to be saved.
- * @param cacheName
- * @param precacheAssets
- * @param excludeMIMETypes
+ * @param cacheName The name of the cache that will be used in the Service Worker
+ * @param precacheAssets The list of assets that will be precached by the Service Worker
+ * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache
  * @returns The raw template with the base template built
  */
 const __buildBaseTemplate = (
@@ -87,14 +89,15 @@ const __buildBaseTemplate = (
 
 /**
  * Builds a Service Worker Template by name.
- * @param template
- * @param cacheName
- * @param precacheAssets
- * @param excludeMIMETypes
+ * @param template The name of the template to be built
+ * @param cacheName The name of the cache that will be used in the Service Worker
+ * @param precacheAssets The list of assets that will be precached by the Service Worker
+ * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache
+ * @param firebaseOptions The Firebase options that will be used to initialize the Firebase App in
+ * the Service Worker
  * @returns The raw template with the specified template built
  * @throws
  * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
- * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
  * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
  */
 export const buildTemplate = (
@@ -102,6 +105,7 @@ export const buildTemplate = (
   cacheName: string,
   precacheAssets: string[],
   excludeMIMETypes: string[],
+  firebaseOptions: IFirebaseOptions | undefined,
 ): string => {
   switch (template) {
     case 'base': {
