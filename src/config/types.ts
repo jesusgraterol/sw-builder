@@ -47,7 +47,7 @@ export const FirebaseOptionsSchema = z.strictObject({
 export type IFirebaseOptions = z.infer<typeof FirebaseOptionsSchema>;
 
 // the Firebase environment value shape used to initialize the Firebase app
-export const FirebaseConfigSchema = z.strictObject({
+export const FirebaseConfigSchema = z.object({
   options: FirebaseOptionsSchema,
 });
 
