@@ -1,14 +1,10 @@
-/* ************************************************************************************************
- *                                             ERRORS                                             *
- ************************************************************************************************ */
-type IErrorCode = 'INVALID_TEMPLATE_NAME' | 'INVALID_CONFIG_VALUE' | 'NOT_A_PATH_ELEMENT';
-const ERRORS: { [key in IErrorCode]: IErrorCode } = {
+// the errors that can be thrown by the package
+export const ERRORS = {
   INVALID_TEMPLATE_NAME: 'INVALID_TEMPLATE_NAME',
-  INVALID_CONFIG_VALUE: 'INVALID_CONFIG_VALUE',
   NOT_A_PATH_ELEMENT: 'NOT_A_PATH_ELEMENT',
-};
-
-/* ************************************************************************************************
- *                                         MODULE EXPORTS                                         *
- ************************************************************************************************ */
-export { ERRORS };
+  FAILED_TO_READ_BASE_CONFIG: 'FAILED_TO_READ_BASE_CONFIG',
+  INVALID_FIREBASE_CONFIG: 'INVALID_FIREBASE_CONFIG',
+  INVALID_ENVIRONMENT: 'INVALID_ENVIRONMENT',
+  FAILED_TO_BUILD_CONFIG: 'FAILED_TO_BUILD_CONFIG',
+  FAILED_TO_READ_FIREBASE_CONFIG: 'FAILED_TO_READ_FIREBASE_CONFIG',
+} as const;

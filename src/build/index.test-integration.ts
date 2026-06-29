@@ -1,8 +1,10 @@
 import { describe, afterAll, test, expect } from 'vitest';
 import { deleteDirectory, deleteFile, isFile, writeJSONFile, writeTextFile } from 'fs-utils-sync';
-import { IBaseConfig, IModuleArgs } from '../shared/types.js';
+
+import type { IBaseConfig } from '../config/index.js';
+import type { IModuleArgs } from '../shared/types.js';
 import { run } from './index.js';
-import { buildOutputPath } from '../utils/index.js';
+import { buildOutputPath } from '../utilities/index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -18,10 +20,14 @@ const CONFIG_PATH: string = 'sw-builder.config.json';
  *                                            HELPERS                                             *
  ************************************************************************************************ */
 
-// the configuration builder
-const c = (config?: Partial<IBaseConfig>) => ({
+/**
+ * Builds a base configuration fixture.
+ * @param config The configuration fields to override.
+ * @returns The complete base configuration fixture.
+ */
+const buildBaseConfig = (config?: Partial<IBaseConfig>): IBaseConfig => ({
   outDir: config?.outDir ?? DIST_PATH,
-  template: config?.template ?? 'base',
+  template: 'base',
   includeToPrecache: config?.includeToPrecache ?? [],
   excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
   excludeMIMETypesFromCache: config?.excludeMIMETypesFromCache ?? [],
@@ -41,7 +47,7 @@ describe('Build', () => {
     // create the config file
     writeJSONFile(
       'sw-builder.config.json',
-      c({
+      buildBaseConfig({
         includeToPrecache: ['/index.html', '/assets'],
       }),
     );

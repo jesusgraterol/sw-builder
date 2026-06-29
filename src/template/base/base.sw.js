@@ -1,8 +1,12 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 /* ************************************************************************************************
- *                                           CONSTANTS                                            *
+ *                                             CACHE                                              *
  ************************************************************************************************ */
+
+/**------------------------------------------------------------------------------------------------
+ * Constants
+ -------------------------------------------------------------------------------------------------*/
 
 // the current version of the cache
 const CACHE_NAME = '';
@@ -13,14 +17,14 @@ const PRECACHE_ASSETS = [];
 // the list of MIME Types that won't be cached when the app sends HTTP GET requests
 const EXCLUDE_MIME_TYPES = [];
 
-/* ************************************************************************************************
- *                                       MAIN CACHE ACTIONS                                       *
- ************************************************************************************************ */
+/**------------------------------------------------------------------------------------------------
+ * Main actions
+ -------------------------------------------------------------------------------------------------*/
 
 /**
  * Invoked when the Service Worker has been installed. It takes care of adding the base resources
  * to the cache (if any).
- * @returns Promise<void>
+ * @returns A promise that resolves when the resources have been added to the cache
  */
 const precacheResources = async () => {
   if (PRECACHE_ASSETS.length > 0) {
@@ -32,7 +36,7 @@ const precacheResources = async () => {
 /**
  * Verifies if the value of the 'Accept' or 'Content-Type' header is cacheable.
  * @param {*} contentTypeHeader
- * @returns boolean
+ * @returns A boolean indicating if the value of the header is cacheable
  */
 const isMIMETypeCacheable = (contentTypeHeader) =>
   contentTypeHeader === null ||
@@ -44,7 +48,7 @@ const isMIMETypeCacheable = (contentTypeHeader) =>
  * - Requests with MIME Types that are not included in EXCLUDE_MIME_TYPES
  * @param {*} request
  * @param {*} response
- * @returns boolean
+ * @returns A boolean indicating if the request can be cached
  */
 const canRequestBeCached = (request, response) =>
   request.ok &&
@@ -57,7 +61,7 @@ const canRequestBeCached = (request, response) =>
  * Adds the request and its response to the cache.
  * @param {*} request
  * @param {*} response
- * @returns Promise<void>
+ * @returns A promise that resolves when the request and its response have been added to the cache
  */
 const putInCache = async (request, response) => {
   if (canRequestBeCached(request, response)) {
@@ -71,7 +75,7 @@ const putInCache = async (request, response) => {
  * it will perform the request and store the data in cache.
  * Note: the Response stored in cache is a clone as it can only be read once.
  * @param {*} request
- * @returns Promise<Response>
+ * @returns A promise that resolves to a Response object
  */
 const cacheFirst = async (request) => {
   // first, try to get the resource from the cache
@@ -93,13 +97,13 @@ const cacheFirst = async (request) => {
   }
 };
 
-/* ************************************************************************************************
- *                                     CACHE CLEAN UP ACTIONS                                     *
- ************************************************************************************************ */
+/**------------------------------------------------------------------------------------------------
+ * Clean up actions
+ -------------------------------------------------------------------------------------------------*/
 
 /**
  * Deletes everything stored in cache that doesn't match the current version.
- * @returns Promise<void>
+ * @returns A promise that resolves when the old caches have been deleted
  */
 const deleteOldCaches = async () => {
   const keyList = await caches.keys();
@@ -109,9 +113,9 @@ const deleteOldCaches = async () => {
   }
 };
 
-/* ************************************************************************************************
- *                                             EVENTS                                             *
- ************************************************************************************************ */
+/**------------------------------------------------------------------------------------------------
+ * Events
+ -------------------------------------------------------------------------------------------------*/
 
 /**
  * Triggers when the Service Worker has been fetched and registered.

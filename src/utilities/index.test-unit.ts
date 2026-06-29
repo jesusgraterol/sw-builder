@@ -1,22 +1,11 @@
+// @vitest-environment node
 import { describe, afterEach, test, expect, vi } from 'vitest';
-import {
-  IPathElement,
-  isDirectory,
-  readJSONFile,
-  getPathElement,
-  readDirectory,
-} from 'fs-utils-sync';
-import { IBaseConfig } from '../shared/types.js';
+import { Exception } from 'error-message-utils';
+import { type IPathElement, getPathElement, readDirectory } from 'fs-utils-sync';
+
 import { ERRORS } from '../shared/errors.js';
-import {
-  OUTPUT_NAME,
-  CACHE_NAME_CHARACTERS,
-  CACHE_NAME_LENGTH,
-  generateCacheName,
-  readConfigFile,
-  buildOutputPath,
-  buildPrecacheAssetPaths,
-} from './index.js';
+import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
+import { generateCacheName, buildOutputPath, buildPrecacheAssetPaths } from './index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -31,8 +20,6 @@ const OUT_DIR: string = 'test-dist';
 
 // fs-utils-sync package
 vi.mock('fs-utils-sync', () => ({
-  readJSONFile: vi.fn(),
-  isDirectory: vi.fn(),
   getPathElement: vi.fn(),
   readDirectory: vi.fn(),
 }));
@@ -41,17 +28,11 @@ vi.mock('fs-utils-sync', () => ({
  *                                            HELPERS                                             *
  ************************************************************************************************ */
 
-// configuration builder
-const c = (config?: Partial<IBaseConfig>): IBaseConfig => ({
-  outDir: config?.outDir ?? OUT_DIR,
-  template: config?.template ?? 'base',
-  includeToPrecache: config?.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
-  excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
-  excludeMIMETypesFromCache: config?.excludeMIMETypesFromCache ?? [],
-  ...config,
-});
-
-// path element builder
+/**
+ * Builds a mock path element for cache asset traversal tests.
+ * @param el The path element fields to override.
+ * @returns The complete mocked path element.
+ */
 const pe = (el: Partial<IPathElement>): IPathElement => ({
   path: el?.path ?? '',
   baseName: el?.baseName ?? '',
@@ -63,73 +44,54 @@ const pe = (el: Partial<IPathElement>): IPathElement => ({
   creation: el?.creation ?? Date.now(),
 });
 
-// mocks the getPathElement func so it returns a custom list of path elements
-const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any) => {
-  if (returnValues.length) {
-    const mockVal = returnValues.shift();
-    if (mockFn) {
-      // @ts-ignore
-      mockGetPathElement(returnValues, mockFn.mockReturnValueOnce(mockVal));
-    } else {
-      // @ts-ignore
-      mockGetPathElement(returnValues, getPathElement.mockReturnValueOnce(mockVal));
-    }
+/**
+ * Queues mocked path element responses in the same order the utility reads them.
+ * @param returnValues The path element responses to return.
+ */
+const mockGetPathElement = (returnValues: (IPathElement | null)[]): void => {
+  returnValues.forEach((pathElement: IPathElement | null) => {
+    vi.mocked(getPathElement).mockReturnValueOnce(pathElement);
+  });
+};
+
+/**
+ * Captures the error thrown by a callback.
+ * @param throwError The callback expected to throw.
+ * @returns The captured error.
+ */
+const captureError = (throwError: () => unknown): unknown => {
+  try {
+    throwError();
+  } catch (error) {
+    return error;
   }
+
+  throw new Error('Expected callback to throw.');
+};
+
+/**
+ * Verifies an Exception without depending on encoded message strings.
+ * @param throwError The callback expected to throw.
+ * @param expectedMessage The exact expected error message.
+ * @param expectedCode The exact expected error code.
+ */
+const expectException = (
+  throwError: () => unknown,
+  expectedMessage: string,
+  expectedCode: string,
+): void => {
+  const error = captureError(throwError);
+
+  expect(error).toBeInstanceOf(Exception);
+  expect(error).toMatchObject({
+    message: expectedMessage,
+    code: expectedCode,
+  });
 };
 
 /* ************************************************************************************************
  *                                             TESTS                                              *
  ************************************************************************************************ */
-
-describe('readConfigFile', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  test('throws if the config object is invalid', () => {
-    // @ts-ignore
-    readJSONFile.mockReturnValue(undefined);
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-  });
-
-  test("throws if the outDir is invalid or the directory doesn't exist", () => {
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ outDir: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ outDir: '' }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-    // @ts-ignore
-    isDirectory.mockReturnValue(false);
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ outDir: 'dist' }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-  });
-
-  test('throws if the includeToPrecache is not an array or is empty', () => {
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ includeToPrecache: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ includeToPrecache: [] }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-  });
-
-  test('throws if the excludeFromPrecache is not an array', () => {
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ excludeFromPrecache: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-  });
-
-  test('can pass all the validations with a proper file', () => {
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c());
-    // @ts-ignore
-    isDirectory.mockReturnValue(true);
-    expect(() => readConfigFile('config.json')).not.toThrowError();
-    expect(readConfigFile('config.json')).toStrictEqual(c());
-  });
-});
 
 describe('generateCacheName', () => {
   test('can generate a valid cache name', () => {
@@ -152,7 +114,9 @@ describe('buildPrecacheAssetPaths', () => {
 
   test('throws if an asset does not exist', () => {
     mockGetPathElement([pe({ baseName: '/index.html', isFile: true }), null]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+    expectException(
+      () => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], []),
+      "The asset 'test-dist/app.js' is not a path element.",
       ERRORS.NOT_A_PATH_ELEMENT,
     );
   });
@@ -162,7 +126,9 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: '/index.html', isFile: true }),
       pe({ baseName: '/app.js', isSymbolicLink: true }),
     ]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+    expectException(
+      () => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], []),
+      "The asset 'test-dist/app.js' is not a path element.",
       ERRORS.NOT_A_PATH_ELEMENT,
     );
   });
@@ -178,8 +144,7 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: '/app.js', isFile: true }),
       pe({ baseName: '/img', isDirectory: true }),
     ]);
-    // @ts-ignore
-    readDirectory.mockReturnValueOnce([
+    vi.mocked(readDirectory).mockReturnValueOnce([
       `${OUT_DIR}/img/some-img.png`,
       `${OUT_DIR}/img/some-other-img.jpg`,
     ]);
@@ -206,8 +171,7 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: '/app.js', isFile: true }),
       pe({ baseName: '/img', isDirectory: true }),
     ]);
-    // @ts-ignore
-    readDirectory.mockReturnValueOnce([
+    vi.mocked(readDirectory).mockReturnValueOnce([
       `${OUT_DIR}/img/some-img.png`,
       `${OUT_DIR}/img/some-other-img.jpg`,
     ]);
