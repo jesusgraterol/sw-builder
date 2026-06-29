@@ -1,4 +1,5 @@
-export const BASE_TEMPLATE: string = `/* ************************************************************************************************
+// raw Firebase FCM service worker template appended after the base template
+export const FIREBASE_FCM_TEMPLATE: string = `/* ************************************************************************************************
  *                                          FIREBASE FCM                                          *
  ************************************************************************************************ */
 

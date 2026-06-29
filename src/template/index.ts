@@ -32,7 +32,13 @@ export const buildTemplate = (
       return buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
     }
     case 'firebase-fcm': {
-      return buildFirebaseFcmTemplate(firebaseOptions, firebaseSdkVersion);
+      return buildFirebaseFcmTemplate(
+        cacheName,
+        precacheAssets,
+        excludeMIMETypes,
+        firebaseOptions as IFirebaseOptions,
+        firebaseSdkVersion as string,
+      );
     }
     default: {
       throw new Exception(

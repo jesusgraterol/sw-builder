@@ -1,6 +1,6 @@
 import { writeTextFile } from 'fs-utils-sync';
 
-import { IModuleArgs } from '../shared/types.js';
+import type { IModuleArgs } from '../shared/types.js';
 import { buildOutputPath, buildPrecacheAssetPaths, generateCacheName } from '../utilities/index.js';
 import { readConfigFile } from '../config/config.js';
 import { buildTemplate } from '../template/index.js';
@@ -45,7 +45,7 @@ export const run = ({
     ),
     configuration.excludeMIMETypesFromCache,
     'firebaseOptions' in configuration ? configuration.firebaseOptions : undefined,
-    firebaseSdkVersion,
+    'firebaseSdkVersion' in configuration ? configuration.firebaseSdkVersion : undefined,
   );
 
   // finally, save the file in the specified path
