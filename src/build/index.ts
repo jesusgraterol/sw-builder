@@ -10,7 +10,8 @@ import { buildTemplate } from '../template/index.js';
  * @param args
  * @throws
  * - FAILED_TO_READ_BASE_CONFIG: if the base configuration file could not be read or parsed.
- * - INVALID_FIREBASE_CONFIG_PROCESS_ENV_KEY: if the provided env var key is invalid or not set.
+ * - INVALID_FIREBASE_CONFIG: if the provided Firebase SDK version is invalid.
+ * - INVALID_FIREBASE_CONFIG: if the provided env var key is invalid or not set.
  * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
  * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
  * - FAILED_TO_BUILD_CONFIG: if the configuration file could not be read or parsed.
@@ -23,9 +24,15 @@ export const run = ({
   config = 'sw-builder.config.json',
   environment,
   firebaseConfigProcessEnvKey,
+  firebaseSdkVersion,
 }: IModuleArgs): void => {
   // load the configuration file
-  const configuration = readConfigFile(config, environment, firebaseConfigProcessEnvKey);
+  const configuration = readConfigFile(
+    config,
+    environment,
+    firebaseConfigProcessEnvKey,
+    firebaseSdkVersion,
+  );
 
   // build the Service Worker's Template
   const template = buildTemplate(

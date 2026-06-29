@@ -41,6 +41,7 @@ export const FirebaseConfigSchema = z.object({
 export const FirebaseFcmConfigSchema = BaseConfigSchema.extend({
   template: z.literal('firebase-fcm'),
   firebaseOptions: FirebaseOptionsSchema,
+  firebaseSdkVersion: z.string().min(1),
 });
 
 export type IFirebaseFcmConfig = z.infer<typeof FirebaseFcmConfigSchema>;
