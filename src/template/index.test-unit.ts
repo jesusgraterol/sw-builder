@@ -1,7 +1,9 @@
 import { describe, afterEach, test, expect, vi } from 'vitest';
 import { Exception } from 'error-message-utils';
+
 import { ERRORS } from '../shared/errors.js';
-import { buildTemplate, stringifyArrayConstant } from './index.js';
+import { stringifyArrayConstant } from './utilities.js';
+import { buildTemplate } from './index.js';
 
 /* ************************************************************************************************
  *                                            HELPERS                                             *
@@ -53,8 +55,8 @@ describe('Template', () => {
 
   describe('buildBaseTemplate', () => {
     test('throws if an invalid template name is provided', () => {
-      // @ts-ignore
       expectException(
+        // @ts-ignore
         () => buildTemplate('non-existent'),
         "The template name 'non-existent' is not supported.",
         ERRORS.INVALID_TEMPLATE_NAME,
@@ -62,7 +64,7 @@ describe('Template', () => {
     });
 
     test('can build a base template', () => {
-      const template = buildTemplate('base', 'testcache', [], []);
+      const template = buildTemplate('base', 'testcache', [], [], undefined);
       expect(template).toContain("const CACHE_NAME = 'testcache';");
       expect(template).toContain(stringifyArrayConstant('PRECACHE_ASSETS', []));
       expect(template).toContain(stringifyArrayConstant('EXCLUDE_MIME_TYPES', []));
@@ -74,6 +76,7 @@ describe('Template', () => {
         'testcache',
         ['/', '/assets/', '/assets/bundle.js', '/index.html'],
         ['application/json', 'text/plain'],
+        undefined,
       );
       expect(template).toContain("const CACHE_NAME = 'testcache';");
       expect(template).toContain(
