@@ -14,6 +14,7 @@ import { buildTemplate } from '../template/index.js';
  * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
  * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
  * - FAILED_TO_BUILD_CONFIG: if the configuration file could not be read or parsed.
+ * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  * - ...
  * - ...
  * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if data is not a valid string.
