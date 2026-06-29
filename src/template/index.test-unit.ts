@@ -64,7 +64,7 @@ describe('Template', () => {
     });
 
     test('can build a base template', () => {
-      const template = buildTemplate('base', 'testcache', [], [], undefined);
+      const template = buildTemplate('base', 'testcache', [], [], undefined, undefined);
       expect(template).toContain("const CACHE_NAME = 'testcache';");
       expect(template).toContain(stringifyArrayConstant('PRECACHE_ASSETS', []));
       expect(template).toContain(stringifyArrayConstant('EXCLUDE_MIME_TYPES', []));
@@ -76,6 +76,7 @@ describe('Template', () => {
         'testcache',
         ['/', '/assets/', '/assets/bundle.js', '/index.html'],
         ['application/json', 'text/plain'],
+        undefined,
         undefined,
       );
       expect(template).toContain("const CACHE_NAME = 'testcache';");

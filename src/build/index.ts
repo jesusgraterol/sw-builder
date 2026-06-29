@@ -45,6 +45,7 @@ export const run = ({
     ),
     configuration.excludeMIMETypesFromCache,
     'firebaseOptions' in configuration ? configuration.firebaseOptions : undefined,
+    firebaseSdkVersion,
   );
 
   // finally, save the file in the specified path

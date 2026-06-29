@@ -4,6 +4,7 @@ import type { ITemplateName } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import { IFirebaseOptions } from '../config/index.js';
 import { buildBaseTemplate } from './base/index.js';
+import { buildFirebaseFcmTemplate } from './firebase-fcm/index.js';
 
 /**
  * Builds a Service Worker Template by name.
@@ -24,10 +25,14 @@ export const buildTemplate = (
   precacheAssets: string[],
   excludeMIMETypes: string[],
   firebaseOptions: IFirebaseOptions | undefined,
+  firebaseSdkVersion: string | undefined,
 ): string => {
   switch (template) {
     case 'base': {
       return buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
+    }
+    case 'firebase-fcm': {
+      return buildFirebaseFcmTemplate(firebaseOptions, firebaseSdkVersion);
     }
     default: {
       throw new Exception(
