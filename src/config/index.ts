@@ -1,11 +1,25 @@
 // types
+export type {
+  IBaseConfig,
+  IConfig,
+  IConfigTemplate,
+  IFirebaseConfig,
+  IFirebaseOptions,
+  IFirebaseFcmConfig,
+  IResolvedConfig,
+  IResolvedFirebaseFcmConfig,
+} from './types.js';
+
+// schemas
 export {
   BaseConfigSchema,
-  IBaseConfig,
+  ConfigSchema,
+  ConfigTemplateSchema,
   FirebaseOptionsSchema,
-  IFirebaseOptions,
+  FirebaseConfigSchema,
   FirebaseFcmConfigSchema,
-  IFirebaseFcmConfig,
+  ResolvedConfigSchema,
+  ResolvedFirebaseFcmConfigSchema,
 } from './types.js';
 
 // fns

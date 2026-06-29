@@ -5,7 +5,7 @@ import { readJSONFile } from 'fs-utils-sync';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { ERRORS } from '../shared/errors.js';
-import type { IBaseConfig, IFirebaseOptions } from './index.js';
+import type { IBaseConfig, IFirebaseFcmConfig, IFirebaseOptions } from './index.js';
 import { readConfigFile } from './index.js';
 
 /* ************************************************************************************************
@@ -56,10 +56,26 @@ type IExceptionExpectation = {
  */
 const buildBaseConfig = (config: Partial<IBaseConfig> = {}): IBaseConfig => ({
   outDir: config.outDir ?? 'test-dist',
-  template: config.template ?? 'base',
+  template: 'base',
   includeToPrecache: config.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
   excludeFilesFromPrecache: config.excludeFilesFromPrecache ?? [],
   excludeMIMETypesFromCache: config.excludeMIMETypesFromCache ?? [],
+});
+
+/**
+ * Builds a valid Firebase FCM configuration fixture.
+ * @param config The configuration fields to override.
+ * @returns The complete Firebase FCM configuration fixture.
+ */
+const buildFirebaseFcmConfig = (config: Partial<IFirebaseFcmConfig> = {}): IFirebaseFcmConfig => ({
+  outDir: config.outDir ?? 'test-dist',
+  template: 'firebase-fcm',
+  includeToPrecache: config.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
+  excludeFilesFromPrecache: config.excludeFilesFromPrecache ?? [],
+  excludeMIMETypesFromCache: config.excludeMIMETypesFromCache ?? [],
+  firebaseConfigProcessEnvKey:
+    config.firebaseConfigProcessEnvKey ?? TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY,
+  firebaseSdkVersion: config.firebaseSdkVersion ?? FIREBASE_SDK_VERSION,
 });
 
 /**
@@ -140,6 +156,7 @@ describe('readConfigFile', () => {
     ['empty outDir', { ...buildBaseConfig(), outDir: '' }],
     ['missing template', { ...buildBaseConfig(), template: undefined }],
     ['invalid template', { ...buildBaseConfig(), template: 'non-existent' }],
+    ['extra base config field', { ...buildBaseConfig(), firebaseSdkVersion: FIREBASE_SDK_VERSION }],
     ['invalid includeToPrecache', { ...buildBaseConfig(), includeToPrecache: undefined }],
     [
       'invalid excludeFilesFromPrecache',
@@ -152,99 +169,92 @@ describe('readConfigFile', () => {
   ])('readConfigFile(%s) -> FAILED_TO_READ_BASE_CONFIG', (_description, config) => {
     vi.mocked(readJSONFile).mockReturnValue(config);
 
-    expectException(
-      () => readConfigFile(CONFIG_PATH, undefined, TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY, undefined),
-      {
-        code: ERRORS.FAILED_TO_READ_BASE_CONFIG,
-        messagePrefix: `Failed to read the base configuration file '${CONFIG_PATH}':`,
-      },
-    );
+    expectException(() => readConfigFile(CONFIG_PATH, undefined), {
+      code: ERRORS.FAILED_TO_READ_BASE_CONFIG,
+      messagePrefix: `Failed to read the base configuration file '${CONFIG_PATH}':`,
+    });
+  });
+
+  test('throws if the config file cannot be read', () => {
+    vi.mocked(readJSONFile).mockImplementation(() => {
+      throw new Error('Config file is missing.');
+    });
+
+    expectException(() => readConfigFile(CONFIG_PATH, undefined), {
+      code: ERRORS.FAILED_TO_READ_BASE_CONFIG,
+      messagePrefix: `Failed to read the base configuration file '${CONFIG_PATH}':`,
+    });
   });
 
   test('can read a valid base config', () => {
     const baseConfig = buildBaseConfig();
     vi.mocked(readJSONFile).mockReturnValue(baseConfig);
 
-    expect(
-      readConfigFile(CONFIG_PATH, undefined, TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY, undefined),
-    ).toStrictEqual(baseConfig);
+    expect(readConfigFile(CONFIG_PATH, undefined)).toStrictEqual(baseConfig);
     expect(loadDotEnv).not.toHaveBeenCalled();
   });
 
-  test('throws if Firebase config is requested without a valid Firebase SDK version', () => {
-    vi.mocked(readJSONFile).mockReturnValue(buildBaseConfig({ template: 'firebase-fcm' }));
+  test.each([
+    [
+      'missing Firebase config env key',
+      { ...buildFirebaseFcmConfig(), firebaseConfigProcessEnvKey: undefined },
+    ],
+    [
+      'empty Firebase config env key',
+      { ...buildFirebaseFcmConfig(), firebaseConfigProcessEnvKey: '' },
+    ],
+    [
+      'missing Firebase SDK version',
+      { ...buildFirebaseFcmConfig(), firebaseSdkVersion: undefined },
+    ],
+    ['empty Firebase SDK version', { ...buildFirebaseFcmConfig(), firebaseSdkVersion: '' }],
+  ])('readConfigFile(%s) -> FAILED_TO_READ_BASE_CONFIG', (_description, config) => {
+    vi.mocked(readJSONFile).mockReturnValue(config);
 
-    expectException(
-      () =>
-        readConfigFile(CONFIG_PATH, 'production', TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY, undefined),
-      {
-        code: ERRORS.INVALID_FIREBASE_CONFIG,
-        message: 'The Firebase SDK version is invalid: undefined',
-      },
-    );
+    expectException(() => readConfigFile(CONFIG_PATH, 'production'), {
+      code: ERRORS.FAILED_TO_READ_BASE_CONFIG,
+      messagePrefix: `Failed to read the base configuration file '${CONFIG_PATH}':`,
+    });
     expect(loadDotEnv).not.toHaveBeenCalled();
   });
 
   test('throws if Firebase config is requested without a valid environment', () => {
     const firebaseOptions = buildFirebaseOptions();
 
-    vi.mocked(readJSONFile).mockReturnValue(buildBaseConfig({ template: 'firebase-fcm' }));
+    vi.mocked(readJSONFile).mockReturnValue(buildFirebaseFcmConfig());
     process.env[TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY] = JSON.stringify({
       options: firebaseOptions,
     });
 
-    expectException(
-      () =>
-        readConfigFile(
-          CONFIG_PATH,
-          undefined,
-          TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY,
-          FIREBASE_SDK_VERSION,
-        ),
-      {
-        code: ERRORS.INVALID_ENVIRONMENT,
-        message:
-          "The firebase-fcm sw template requires a valid environment to be provided. The provided environment is 'undefined'.",
-      },
-    );
+    expectException(() => readConfigFile(CONFIG_PATH, undefined), {
+      code: ERRORS.INVALID_ENVIRONMENT,
+      message:
+        "The firebase-fcm sw template requires a valid environment to be provided. The provided environment is 'undefined'.",
+    });
   });
 
   test('throws if the Firebase config process env key has no value', () => {
-    vi.mocked(readJSONFile).mockReturnValue(buildBaseConfig({ template: 'firebase-fcm' }));
+    vi.mocked(readJSONFile).mockReturnValue(buildFirebaseFcmConfig());
 
-    expectException(
-      () =>
-        readConfigFile(
-          CONFIG_PATH,
-          'production',
-          TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY,
-          FIREBASE_SDK_VERSION,
-        ),
-      {
-        code: ERRORS.INVALID_FIREBASE_CONFIG,
-        message: `The Firebase configuration process environment key is invalid: ${TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY}`,
-      },
-    );
-    expect(loadDotEnv).not.toHaveBeenCalled();
+    expectException(() => readConfigFile(CONFIG_PATH, 'production'), {
+      code: ERRORS.INVALID_FIREBASE_CONFIG,
+      message: `The Firebase configuration process environment key is invalid: ${TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY}`,
+    });
+    expect(loadDotEnv).toHaveBeenCalledWith({
+      path: '.env.production',
+      override: false,
+      quiet: true,
+    });
   });
 
   test('throws if the Firebase config environment value cannot be parsed', () => {
-    vi.mocked(readJSONFile).mockReturnValue(buildBaseConfig({ template: 'firebase-fcm' }));
+    vi.mocked(readJSONFile).mockReturnValue(buildFirebaseFcmConfig());
     process.env[TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY] = 'invalid-json';
 
-    expectException(
-      () =>
-        readConfigFile(
-          CONFIG_PATH,
-          'production',
-          TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY,
-          FIREBASE_SDK_VERSION,
-        ),
-      {
-        code: ERRORS.FAILED_TO_READ_FIREBASE_CONFIG,
-        messagePrefix: `Failed to read the Firebase configuration from the process environment variable '${TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY}':`,
-      },
-    );
+    expectException(() => readConfigFile(CONFIG_PATH, 'production'), {
+      code: ERRORS.FAILED_TO_READ_FIREBASE_CONFIG,
+      messagePrefix: `Failed to read the Firebase configuration from the process environment variable '${TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY}':`,
+    });
     expect(loadDotEnv).toHaveBeenCalledWith({
       path: '.env.production',
       override: false,
@@ -253,27 +263,19 @@ describe('readConfigFile', () => {
   });
 
   test('can read a Firebase config with environment options', () => {
-    const baseConfig = buildBaseConfig({ template: 'firebase-fcm' });
+    const firebaseFcmConfig = buildFirebaseFcmConfig();
     const firebaseOptions = buildFirebaseOptions();
     const expectedConfig = {
-      ...baseConfig,
+      ...firebaseFcmConfig,
       firebaseOptions,
-      firebaseSdkVersion: FIREBASE_SDK_VERSION,
     };
 
-    vi.mocked(readJSONFile).mockReturnValue(baseConfig);
+    vi.mocked(readJSONFile).mockReturnValue(firebaseFcmConfig);
     process.env[TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY] = JSON.stringify({
       options: firebaseOptions,
     });
 
-    expect(
-      readConfigFile(
-        CONFIG_PATH,
-        'development',
-        TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY,
-        FIREBASE_SDK_VERSION,
-      ),
-    ).toStrictEqual(expectedConfig);
+    expect(readConfigFile(CONFIG_PATH, 'development')).toStrictEqual(expectedConfig);
     expect(loadDotEnv).toHaveBeenCalledWith({
       path: '.env',
       override: false,

@@ -14,10 +14,10 @@ import { buildFirebaseFcmTemplate } from './firebase-fcm/index.js';
  * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache
  * @param firebaseOptions The Firebase options that will be used to initialize the Firebase App in
  * the Service Worker
+ * @param firebaseSdkVersion The Firebase SDK version to load
  * @returns The raw template with the specified template built
  * @throws
  * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
- * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
  */
 export const buildTemplate = (
   template: ITemplateName,

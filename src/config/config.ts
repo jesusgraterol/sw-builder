@@ -1,68 +1,21 @@
-import { config as loadDotEnv } from 'dotenv';
 import { Exception, extractMessage } from 'error-message-utils';
-import { isStringValid } from 'web-utils-kit';
 import { readJSONFile } from 'fs-utils-sync';
 
-import { IEnvironment } from '../shared/types.js';
+import type { IEnvironment } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
-import {
-  BaseConfigSchema,
-  FirebaseConfigSchema,
-  IBaseConfig,
-  IFirebaseFcmConfig,
-  IFirebaseOptions,
-} from './types.js';
-import { getEnvFileName } from './utilities.js';
+import { readFirebaseOptions } from './firebase.js';
+import { ConfigSchema, type IConfig, type IResolvedConfig } from './types.js';
 
 /**
- * Reads the Firebase options from the environment variables.
- * @param environment The current environment.
- * @param firebaseConfigProcessEnvKey The key of the environment variable containing the Firebase configuration.
- * @returns The Firebase options.
+ * Reads the raw configuration file contents.
+ * @param configPath The path to the configuration file.
+ * @returns The raw configuration file contents.
  * @throws
- * - INVALID_FIREBASE_CONFIG: if the provided env var key is invalid or not set.
- * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
- * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
+ * - FAILED_TO_READ_BASE_CONFIG: if the configuration file could not be read.
  */
-const __readFirebaseOptions = (
-  environment: IEnvironment | undefined,
-  firebaseConfigProcessEnvKey: string | undefined,
-): IFirebaseOptions => {
-  // validate the environment variable key
-  if (
-    !isStringValid(firebaseConfigProcessEnvKey) ||
-    !isStringValid(process.env[firebaseConfigProcessEnvKey])
-  ) {
-    throw new Exception(
-      `The Firebase configuration process environment key is invalid: ${firebaseConfigProcessEnvKey}`,
-      ERRORS.INVALID_FIREBASE_CONFIG,
-    );
-  }
-
-  // load the environment file and read the firebase config
-  loadDotEnv({ path: getEnvFileName(environment), override: false, quiet: true });
+const readRawConfigFile = (configPath: string): unknown => {
   try {
-    return FirebaseConfigSchema.parse(JSON.parse(process.env[firebaseConfigProcessEnvKey])).options;
-  } catch (e) {
-    throw new Exception(
-      `Failed to read the Firebase configuration from the process environment variable '${firebaseConfigProcessEnvKey}': ${extractMessage(
-        e,
-      )}`,
-      ERRORS.FAILED_TO_READ_FIREBASE_CONFIG,
-    );
-  }
-};
-
-/**
- * Reads the base configuration file and returns the configuration object.
- * @param configPath The path to the base configuration file.
- * @returns The base configuration object.
- * @throws
- * - FAILED_TO_READ_BASE_CONFIG: if the base configuration file could not be read or parsed.
- */
-const __readBaseConfigFile = (configPath: string): IBaseConfig => {
-  try {
-    return BaseConfigSchema.parse(readJSONFile(configPath));
+    return readJSONFile(configPath);
   } catch (e) {
     throw new Exception(
       `Failed to read the base configuration file '${configPath}': ${extractMessage(e)}`,
@@ -72,46 +25,52 @@ const __readBaseConfigFile = (configPath: string): IBaseConfig => {
 };
 
 /**
- * Builds the Firebase FCM configuration object.
- * @param baseConfig The base configuration object.
- * @param environment The current environment.
- * @param firebaseConfigProcessEnvKey The key of the environment variable containing the Firebase configuration.
- * @param firebaseSdkVersion The version of the Firebase SDK.
- * @returns The Firebase FCM configuration object.
+ * Parses the raw configuration file contents.
+ * @param configPath The path to the configuration file.
+ * @param rawConfig The raw configuration file contents.
+ * @returns The parsed configuration file contents.
  * @throws
- * - INVALID_FIREBASE_CONFIG: if the provided Firebase SDK version is invalid.
- * - INVALID_FIREBASE_CONFIG: if the provided env var key is invalid or not set.
+ * - FAILED_TO_READ_BASE_CONFIG: if the configuration file could not be parsed.
+ */
+const parseConfigFile = (configPath: string, rawConfig: unknown): IConfig => {
+  try {
+    return ConfigSchema.parse(rawConfig);
+  } catch (e) {
+    throw new Exception(
+      `Failed to read the base configuration file '${configPath}': ${extractMessage(e)}`,
+      ERRORS.FAILED_TO_READ_BASE_CONFIG,
+    );
+  }
+};
+
+/**
+ * Resolves template-specific configuration values.
+ * @param config The parsed configuration file contents.
+ * @param environment The current environment.
+ * @returns The configuration after template-specific values have been resolved.
+ * @throws
+ * - INVALID_FIREBASE_CONFIG: if the configured env var key is invalid or not set.
  * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
  * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
  */
-const __buildFirebaseFcmConfig = (
-  baseConfig: IBaseConfig,
-  environment: IEnvironment | undefined,
-  firebaseConfigProcessEnvKey: string | undefined,
-  firebaseSdkVersion: string | undefined,
-): IFirebaseFcmConfig => {
-  if (!isStringValid(firebaseSdkVersion)) {
-    throw new Exception(
-      `The Firebase SDK version is invalid: ${firebaseSdkVersion}`,
-      ERRORS.INVALID_FIREBASE_CONFIG,
-    );
+const resolveConfig = (config: IConfig, environment: IEnvironment | undefined): IResolvedConfig => {
+  if (config.template === 'base') {
+    return config;
   }
 
-  const firebaseOptions = __readFirebaseOptions(environment, firebaseConfigProcessEnvKey);
+  const firebaseOptions = readFirebaseOptions(environment, config.firebaseConfigProcessEnvKey);
 
-  return { ...baseConfig, firebaseOptions, firebaseSdkVersion } as IFirebaseFcmConfig;
+  return { ...config, firebaseOptions };
 };
 
 /**
  * Reads the configuration file and returns the configuration object.
  * @param configPath The path to the configuration file.
  * @param environment The current environment.
- * @param firebaseConfigProcessEnvKey The key of the environment variable containing the Firebase configuration.
  * @returns The configuration object.
  * @throws
  * - FAILED_TO_READ_BASE_CONFIG: if the base configuration file could not be read or parsed.
- * - INVALID_FIREBASE_CONFIG: if the provided Firebase SDK version is invalid.
- * - INVALID_FIREBASE_CONFIG: if the provided env var key is invalid or not set.
+ * - INVALID_FIREBASE_CONFIG: if the configured env var key is invalid or not set.
  * - INVALID_ENVIRONMENT: if the provided environment is not recognized.
  * - FAILED_TO_READ_FIREBASE_CONFIG: if the Firebase configuration could not be read from the environment variable.
  * - FAILED_TO_BUILD_CONFIG: if the configuration file could not be read or parsed.
@@ -119,25 +78,12 @@ const __buildFirebaseFcmConfig = (
 export const readConfigFile = (
   configPath: string,
   environment: IEnvironment | undefined,
-  firebaseConfigProcessEnvKey: string | undefined,
-  firebaseSdkVersion: string | undefined,
-): IBaseConfig | IFirebaseFcmConfig => {
+): IResolvedConfig => {
   try {
-    // read the base configuration file
-    const config = __readBaseConfigFile(configPath);
+    const rawConfig = readRawConfigFile(configPath);
+    const config = parseConfigFile(configPath, rawConfig);
 
-    // if the template is 'firebase-fcm', read the Firebase configuration from the process environment variable
-    if (config.template === 'firebase-fcm') {
-      return __buildFirebaseFcmConfig(
-        config,
-        environment,
-        firebaseConfigProcessEnvKey,
-        firebaseSdkVersion,
-      );
-    }
-
-    // otherwise, return the base configuration
-    return config;
+    return resolveConfig(config, environment);
   } catch (e) {
     if (e instanceof Exception) {
       throw e;

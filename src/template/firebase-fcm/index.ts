@@ -2,13 +2,6 @@ import type { IFirebaseOptions } from '../../config/index.js';
 import { buildBaseTemplate } from '../base/index.js';
 import { FIREBASE_FCM_TEMPLATE } from './firebase-fcm.js';
 
-// Firebase FCM template placeholders replaced while building the final service worker
-const FIREBASE_SDK_VERSION_PLACEHOLDER = "const FIREBASE_SDK_VERSION = '';";
-const FIREBASE_APP_COMPAT_IMPORT_PLACEHOLDER = "importScripts('firebase-app-compat.js');";
-const FIREBASE_MESSAGING_COMPAT_IMPORT_PLACEHOLDER =
-  "importScripts('firebase-messaging-compat.js');";
-const FIREBASE_INITIALIZE_APP_PLACEHOLDER = 'firebase.initializeApp({});';
-
 /**
  * Builds the Firebase app compat SDK import for an unbundled service worker.
  * @param firebaseSdkVersion The Firebase SDK version to load.
@@ -35,7 +28,7 @@ const __buildFirebaseMessagingCompatImport = (firebaseSdkVersion: string): strin
  */
 const __insertFirebaseSdkVersion = (rawTemplate: string, firebaseSdkVersion: string): string =>
   rawTemplate.replace(
-    FIREBASE_SDK_VERSION_PLACEHOLDER,
+    "const FIREBASE_SDK_VERSION = '';",
     `const FIREBASE_SDK_VERSION = '${firebaseSdkVersion}';`,
   );
 
@@ -48,11 +41,11 @@ const __insertFirebaseSdkVersion = (rawTemplate: string, firebaseSdkVersion: str
 const __insertFirebaseSdkImports = (rawTemplate: string, firebaseSdkVersion: string): string =>
   rawTemplate
     .replace(
-      FIREBASE_APP_COMPAT_IMPORT_PLACEHOLDER,
+      "importScripts('firebase-app-compat.js');",
       __buildFirebaseAppCompatImport(firebaseSdkVersion),
     )
     .replace(
-      FIREBASE_MESSAGING_COMPAT_IMPORT_PLACEHOLDER,
+      "importScripts('firebase-messaging-compat.js');",
       __buildFirebaseMessagingCompatImport(firebaseSdkVersion),
     );
 
@@ -64,7 +57,7 @@ const __insertFirebaseSdkImports = (rawTemplate: string, firebaseSdkVersion: str
  */
 const __insertFirebaseOptions = (rawTemplate: string, firebaseOptions: IFirebaseOptions): string =>
   rawTemplate.replace(
-    FIREBASE_INITIALIZE_APP_PLACEHOLDER,
+    'firebase.initializeApp({});',
     `firebase.initializeApp(${JSON.stringify(firebaseOptions, null, 2)});`,
   );
 

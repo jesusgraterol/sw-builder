@@ -55,7 +55,58 @@ Include the `sw-builder` binary in your `package.json` file:
 If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in your `public` directory so you can test the Service Worker's Registration while developing.
 
 
+<br/>
 
+## Using the `firebase-fcm` template
+
+The `firebase-fcm` template includes the same caching behavior as the `base` template and appends
+Firebase Cloud Messaging support to the generated Service Worker.
+
+Update your `sw-builder.config.json` file to use the `firebase-fcm` template:
+
+```json
+{
+  "outDir": "dist",
+  "template": "firebase-fcm",
+  "includeToPrecache": [],
+  "excludeFilesFromPrecache": [],
+  "excludeMIMETypesFromCache": [
+    "application/json",
+    "text/plain",
+    "text/html"
+  ],
+  "firebaseConfigProcessEnvKey": "VITE_FIREBASE_CONFIG",
+  "firebaseSdkVersion": "11.0.0"
+}
+```
+
+Provide the Firebase Web App options as a JSON string in a process environment variable:
+
+```bash
+export VITE_FIREBASE_CONFIG='{"options":{"apiKey":"example-api-key","authDomain":"example.firebaseapp.com","projectId":"example-project","storageBucket":"example.firebasestorage.app","messagingSenderId":"123456789012","appId":"1:123456789012:web:example"}}'
+```
+
+The Firebase config variable must be available to the Node process when the command runs. Then pass
+the environment name to `sw-builder`:
+
+```json
+...
+"scripts": {
+  "build": "tsc -b && vite build && sw-builder --environment='production'"
+}
+...
+```
+
+The `environment` value must be `development`, `staging`, or `production`. It is the only
+Firebase-related command argument, and it determines the dotenv file name used by the builder:
+`.env`, `.env.staging`, or `.env.production`.
+
+The generated Service Worker imports the Firebase compat SDK scripts from `gstatic`, initializes the
+Firebase app with the provided options, and handles background messages. When app clients are open,
+messages are posted to them as `{ type: 'PUSH_MESSAGE', data }`. When no app client is open, the
+Service Worker shows a notification using the `title`, `body`, `icon`, `badge`, and `url` fields from
+the message data. Notification click URLs are limited to the same origin and fall back to the app root
+URL when missing or unsafe.
 
 <br/>
 
@@ -65,7 +116,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
   <summary><code>IBaseConfig</code></summary>
   <br/>
   
-  The configuration required to build the 'base' template. This type should be turned into a discriminated union once more templates are introduced.
+  The configuration required to build the `base` template.
 
   ```typescript
   type IBaseConfig = {
@@ -73,7 +124,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
     outDir: string;
 
     // the name of the template that will be generated
-    template: ITemplateName;
+    template: "base";
 
     // the list of asset paths that will be traversed and included in the cache
     includeToPrecache: string[];
@@ -89,7 +140,7 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
 </details>
 
 <details>
-  <summary><code>IFirebaseOptions</code></summary>
+  <summary><code>IFirebaseOptions</code> & <code>FirebaseConfigSchema</code></summary>
   <br/>
   
   The options object needed to initialize the Firebase project.
@@ -103,18 +154,33 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
     messagingSenderId: string;
     appId: string;
   }
+
+  type FirebaseConfigSchema = {
+    options: IFirebaseOptions;
+  }
   ```
   <br/>
 </details>
 
+<details>
+  <summary><code>IFirebaseFcmConfig</code></summary>
+  <br/>
+  
+  The configuration used to build a service working definition that makes use of the `firebase-fcm` template.
 
-
-
-<br/>
-
-## Templates
-
-- [`base`](https://github.com/jesusgraterol/sw-builder/blob/main/src/template/templates/base-template.sw.js)
+  ```typescript
+  type IFirebaseFcmConfig = {
+    outDir: string;
+    includeToPrecache: string[];
+    excludeFilesFromPrecache: string[];
+    excludeMIMETypesFromCache: string[];
+    template: "firebase-fcm";
+    firebaseConfigProcessEnvKey: string;
+    firebaseSdkVersion: string;
+  }
+  ```
+  <br/>
+</details>
 
 
 

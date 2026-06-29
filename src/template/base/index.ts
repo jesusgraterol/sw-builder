@@ -17,10 +17,12 @@ const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
  * @returns The raw template with the pre-cache assets inserted
  */
 const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =>
-  rawTemplate.replace(
-    'const PRECACHE_ASSETS = [];',
-    stringifyArrayConstant('PRECACHE_ASSETS', precacheAssets),
-  );
+  precacheAssets.length > 0
+    ? rawTemplate.replace(
+        'const PRECACHE_ASSETS = [];',
+        stringifyArrayConstant('PRECACHE_ASSETS', precacheAssets),
+      )
+    : rawTemplate;
 
 /**
  * Inserts the exclude MIME Types content into the raw template.
@@ -29,10 +31,12 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
  * @returns The raw template with the exclude MIME types inserted
  */
 const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
-  rawTemplate.replace(
-    'const EXCLUDE_MIME_TYPES = [];',
-    stringifyArrayConstant('EXCLUDE_MIME_TYPES', types),
-  );
+  types.length > 0
+    ? rawTemplate.replace(
+        'const EXCLUDE_MIME_TYPES = [];',
+        stringifyArrayConstant('EXCLUDE_MIME_TYPES', types),
+      )
+    : rawTemplate;
 
 /**
  * Builds the base template ready to be saved.

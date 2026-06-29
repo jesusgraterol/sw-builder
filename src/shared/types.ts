@@ -11,8 +11,6 @@ export type IEnvironment = 'development' | 'staging' | 'production';
 export interface IModuleArgs extends IBaseParsedArgs {
   config?: string;
   environment?: IEnvironment;
-  firebaseConfigProcessEnvKey?: string;
-  firebaseSdkVersion?: string;
 }
 
 /**
