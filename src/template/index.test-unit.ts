@@ -1,6 +1,46 @@
 import { describe, afterEach, test, expect, vi } from 'vitest';
+import { Exception } from 'error-message-utils';
 import { ERRORS } from '../shared/errors.js';
 import { buildTemplate, stringifyArrayConstant } from './index.js';
+
+/* ************************************************************************************************
+ *                                            HELPERS                                             *
+ ************************************************************************************************ */
+
+/**
+ * Captures the error thrown by a callback.
+ * @param throwError The callback expected to throw.
+ * @returns The captured error.
+ */
+const captureError = (throwError: () => unknown): unknown => {
+  try {
+    throwError();
+  } catch (error) {
+    return error;
+  }
+
+  throw new Error('Expected callback to throw.');
+};
+
+/**
+ * Verifies an Exception without depending on encoded message strings.
+ * @param throwError The callback expected to throw.
+ * @param expectedMessage The exact expected error message.
+ * @param expectedCode The exact expected error code.
+ */
+const expectException = (
+  throwError: () => unknown,
+  expectedMessage: string,
+  expectedCode: string,
+): void => {
+  const error = captureError(throwError);
+
+  expect(error).toBeInstanceOf(Exception);
+  expect(error).toMatchObject({
+    message: expectedMessage,
+    code: expectedCode,
+  });
+};
 
 /* ************************************************************************************************
  *                                             TESTS                                              *
@@ -14,7 +54,11 @@ describe('Template', () => {
   describe('buildBaseTemplate', () => {
     test('throws if an invalid template name is provided', () => {
       // @ts-ignore
-      expect(() => buildTemplate('non-existent')).toThrowError(ERRORS.INVALID_TEMPLATE_NAME);
+      expectException(
+        () => buildTemplate('non-existent'),
+        "The template name 'non-existent' is not supported.",
+        ERRORS.INVALID_TEMPLATE_NAME,
+      );
     });
 
     test('can build a base template', () => {

@@ -1,5 +1,5 @@
-import { encodeError } from 'error-message-utils';
-import { ITemplateName } from '../shared/types.js';
+import { Exception } from 'error-message-utils';
+import type { ITemplateName } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import { BASE_TEMPLATE } from './templates/base-template.js';
 
@@ -108,11 +108,9 @@ export const buildTemplate = (
       return __buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
     }
     default: {
-      throw new Error(
-        encodeError(
-          `The template name '${template}' is not supported.`,
-          ERRORS.INVALID_TEMPLATE_NAME,
-        ),
+      throw new Exception(
+        `The template name '${template}' is not supported.`,
+        ERRORS.INVALID_TEMPLATE_NAME,
       );
     }
   }

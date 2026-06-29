@@ -1,13 +1,14 @@
 import { describe, afterEach, test, expect, vi } from 'vitest';
+import { Exception } from 'error-message-utils';
 import {
-  IPathElement,
+  type IPathElement,
   isDirectory,
   readJSONFile,
   getPathElement,
   readDirectory,
 } from 'fs-utils-sync';
 
-import { IBaseConfig } from '../shared/types.js';
+import type { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
 import {
@@ -76,6 +77,41 @@ const mockGetPathElement = (returnValues: (IPathElement | null)[], mockFn?: any)
   }
 };
 
+/**
+ * Captures the error thrown by a callback.
+ * @param throwError The callback expected to throw.
+ * @returns The captured error.
+ */
+const captureError = (throwError: () => unknown): unknown => {
+  try {
+    throwError();
+  } catch (error) {
+    return error;
+  }
+
+  throw new Error('Expected callback to throw.');
+};
+
+/**
+ * Verifies an Exception without depending on encoded message strings.
+ * @param throwError The callback expected to throw.
+ * @param expectedMessage The exact expected error message.
+ * @param expectedCode The exact expected error code.
+ */
+const expectException = (
+  throwError: () => unknown,
+  expectedMessage: string,
+  expectedCode: string,
+): void => {
+  const error = captureError(throwError);
+
+  expect(error).toBeInstanceOf(Exception);
+  expect(error).toMatchObject({
+    message: expectedMessage,
+    code: expectedCode,
+  });
+};
+
 /* ************************************************************************************************
  *                                             TESTS                                              *
  ************************************************************************************************ */
@@ -88,36 +124,85 @@ describe('readConfigFile', () => {
   test('throws if the config object is invalid', () => {
     // @ts-ignore
     readJSONFile.mockReturnValue(undefined);
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    expectException(
+      () => readConfigFile('config.json'),
+      'The extracted configuration is not a valid object.',
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
   });
 
   test("throws if the outDir is invalid or the directory doesn't exist", () => {
     // @ts-ignore
     readJSONFile.mockReturnValue(c({ outDir: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    expectException(
+      () => readConfigFile('config.json'),
+      "The outDir 'undefined' is not a directory or doesn't exist.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
     // @ts-ignore
     readJSONFile.mockReturnValue(c({ outDir: '' }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    expectException(
+      () => readConfigFile('config.json'),
+      "The outDir '' is not a directory or doesn't exist.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
     // @ts-ignore
     isDirectory.mockReturnValue(false);
     // @ts-ignore
     readJSONFile.mockReturnValue(c({ outDir: 'dist' }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    expectException(
+      () => readConfigFile('config.json'),
+      "The outDir 'dist' is not a directory or doesn't exist.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
   });
 
-  test('throws if the includeToPrecache is not an array or is empty', () => {
+  test('throws if the template is invalid', () => {
+    // @ts-ignore
+    isDirectory.mockReturnValue(true);
+    // @ts-ignore
+    readJSONFile.mockReturnValue(c({ template: undefined }));
+    expectException(
+      () => readConfigFile('config.json'),
+      "The template 'undefined' is not a valid template name.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
+  });
+
+  test('throws if the includeToPrecache is not an array', () => {
+    // @ts-ignore
+    isDirectory.mockReturnValue(true);
     // @ts-ignore
     readJSONFile.mockReturnValue(c({ includeToPrecache: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
-    // @ts-ignore
-    readJSONFile.mockReturnValue(c({ includeToPrecache: [] }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    expectException(
+      () => readConfigFile('config.json'),
+      "The includeToPrecache 'undefined' list is invalid.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
   });
 
-  test('throws if the excludeFromPrecache is not an array', () => {
+  test('throws if the excludeFilesFromPrecache is not an array', () => {
     // @ts-ignore
-    readJSONFile.mockReturnValue(c({ excludeFromPrecache: undefined }));
-    expect(() => readConfigFile('config.json')).toThrowError(ERRORS.INVALID_CONFIG_VALUE);
+    isDirectory.mockReturnValue(true);
+    // @ts-ignore
+    readJSONFile.mockReturnValue(c({ excludeFilesFromPrecache: undefined }));
+    expectException(
+      () => readConfigFile('config.json'),
+      "The excludeFilesFromPrecache 'undefined' list is invalid.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
+  });
+
+  test('throws if the excludeMIMETypesFromCache is not an array', () => {
+    // @ts-ignore
+    isDirectory.mockReturnValue(true);
+    // @ts-ignore
+    readJSONFile.mockReturnValue(c({ excludeMIMETypesFromCache: undefined }));
+    expectException(
+      () => readConfigFile('config.json'),
+      "The excludeMIMETypesFromCache 'undefined' list is invalid.",
+      ERRORS.INVALID_CONFIG_VALUE,
+    );
   });
 
   test('can pass all the validations with a proper file', () => {
@@ -151,7 +236,9 @@ describe('buildPrecacheAssetPaths', () => {
 
   test('throws if an asset does not exist', () => {
     mockGetPathElement([pe({ baseName: '/index.html', isFile: true }), null]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+    expectException(
+      () => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], []),
+      "The asset 'test-dist/app.js' is not a path element.",
       ERRORS.NOT_A_PATH_ELEMENT,
     );
   });
@@ -161,7 +248,9 @@ describe('buildPrecacheAssetPaths', () => {
       pe({ baseName: '/index.html', isFile: true }),
       pe({ baseName: '/app.js', isSymbolicLink: true }),
     ]);
-    expect(() => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], [])).toThrowError(
+    expectException(
+      () => buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/app.js'], []),
+      "The asset 'test-dist/app.js' is not a path element.",
       ERRORS.NOT_A_PATH_ELEMENT,
     );
   });

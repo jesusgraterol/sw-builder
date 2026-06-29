@@ -1,16 +1,16 @@
 /* eslint-disable no-console */
 import { join } from 'node:path';
-import { encodeError } from 'error-message-utils';
+import { Exception } from 'error-message-utils';
 import { isArrayValid, isObjectValid, isStringValid, generateRandomString } from 'web-utils-kit';
 import {
   isDirectory,
   readJSONFile,
   getPathElement,
-  IPathElement,
+  type IPathElement,
   readDirectory,
 } from 'fs-utils-sync';
 
-import { IBaseConfig } from '../shared/types.js';
+import type { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
 import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
 
@@ -28,54 +28,42 @@ import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constan
 const __validateConfigFile = (config: IBaseConfig): void => {
   if (!isObjectValid(config)) {
     console.log(config);
-    throw new Error(
-      encodeError(
-        'The extracted configuration is not a valid object.',
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      'The extracted configuration is not a valid object.',
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
   if (!isStringValid(config.outDir, 1) || !isDirectory(config.outDir)) {
-    throw new Error(
-      encodeError(
-        `The outDir '${config.outDir}' is not a directory or doesn't exist.`,
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      `The outDir '${config.outDir}' is not a directory or doesn't exist.`,
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
   if (!isStringValid(config.template, 1)) {
-    throw new Error(
-      encodeError(
-        `The template '${config.template}' is not a valid template name.`,
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      `The template '${config.template}' is not a valid template name.`,
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
   if (!isArrayValid(config.includeToPrecache, true)) {
     console.log(config.includeToPrecache);
-    throw new Error(
-      encodeError(
-        `The includeToPrecache '${config.includeToPrecache}' list is invalid.`,
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      `The includeToPrecache '${config.includeToPrecache}' list is invalid.`,
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
   if (!isArrayValid(config.excludeFilesFromPrecache, true)) {
     console.log(config.excludeFilesFromPrecache);
-    throw new Error(
-      encodeError(
-        `The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`,
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      `The excludeFilesFromPrecache '${config.excludeFilesFromPrecache}' list is invalid.`,
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
   if (!isArrayValid(config.excludeMIMETypesFromCache, true)) {
     console.log(config.excludeMIMETypesFromCache);
-    throw new Error(
-      encodeError(
-        `The excludeMIMETypesFromCache '${config.excludeMIMETypesFromCache}' list is invalid.`,
-        ERRORS.INVALID_CONFIG_VALUE,
-      ),
+    throw new Exception(
+      `The excludeMIMETypesFromCache '${config.excludeMIMETypesFromCache}' list is invalid.`,
+      ERRORS.INVALID_CONFIG_VALUE,
     );
   }
 };
@@ -90,9 +78,7 @@ const __validateConfigFile = (config: IBaseConfig): void => {
 const __getPathElement = (path: string): IPathElement => {
   const el = getPathElement(path);
   if (el === null || (!el.isDirectory && !el.isFile)) {
-    throw new Error(
-      encodeError(`The asset '${path}' is not a path element.`, ERRORS.NOT_A_PATH_ELEMENT),
-    );
+    throw new Exception(`The asset '${path}' is not a path element.`, ERRORS.NOT_A_PATH_ELEMENT);
   }
   return el;
 };
