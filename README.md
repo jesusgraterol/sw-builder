@@ -28,7 +28,8 @@ Create the `sw-builder.config.json` file in your project's root:
   ],
   "excludeMIMETypesFromCache": [
     "application/json",
-    "text/plain"
+    "text/plain",
+    "text/html"
   ]
 }
 ```

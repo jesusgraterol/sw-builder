@@ -5,12 +5,8 @@ import {
   buildPrecacheAssetPaths,
   generateCacheName,
   readConfigFile,
-} from '../utils/index.js';
+} from '../utilities/index.js';
 import { buildTemplate } from '../template/index.js';
-
-/* ************************************************************************************************
- *                                         IMPLEMENTATION                                         *
- ************************************************************************************************ */
 
 /**
  * Executes the sw-builder script and builds the Service Worker based on the configuration.
@@ -23,7 +19,7 @@ import { buildTemplate } from '../template/index.js';
  * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
  * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
-const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
+export const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   // load the configuration file
   const configuration = readConfigFile(config);
 
@@ -42,8 +38,3 @@ const run = ({ config = 'sw-builder.config.json' }: IModuleArgs): void => {
   // finally, save the file in the specified path
   writeTextFile(buildOutputPath(configuration.outDir), template);
 };
-
-/* ************************************************************************************************
- *                                         MODULE EXPORTS                                         *
- ************************************************************************************************ */
-export { run };

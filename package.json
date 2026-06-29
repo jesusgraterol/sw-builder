@@ -8,10 +8,10 @@
   "scripts": {
     "build": "ts-lib-builder --tsconfig=tsconfig.build.json",
     "test": "npm run test:unit && npm run test:integration",
-    "test:integration": "vitest run --config vitest.test-integration.config.ts",
-    "test:unit": "vitest run --config vitest.test-unit.config.ts",
-    "watch-test:unit": "vitest --config vitest.test-unit.config.ts",
-    "watch-test:integration": "vitest --config vitest.test-integration.config.ts"
+    "test:integration": "vitest run --config vitest/test-integration.config.ts",
+    "test:unit": "vitest run --config vitest/test-unit.config.ts",
+    "watch-test:unit": "vitest --config vitest/test-unit.config.ts",
+    "watch-test:integration": "vitest --config vitest/test-integration.config.ts"
   },
   "bin": {
     "sw-builder": "dist/index.js"
@@ -56,6 +56,7 @@
     "argv-utils": "1.0.5",
     "error-message-utils": "1.2.7",
     "fs-utils-sync": "1.1.1",
-    "web-utils-kit": "1.2.10"
+    "web-utils-kit": "1.2.10",
+    "zod": "4.3.6"
   }
 }

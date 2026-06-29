@@ -11,7 +11,7 @@ import { BASE_TEMPLATE } from './templates/base-template.js';
  * Inserts the freshly generated cacheName into the raw template.
  * @param rawTemplate
  * @param cacheName
- * @returns string
+ * @returns The raw template with the cacheName inserted
  */
 const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
   rawTemplate.replace("const CACHE_NAME = '';", `const CACHE_NAME = '${cacheName}';`);
@@ -20,9 +20,9 @@ const __insertCacheName = (rawTemplate: string, cacheName: string): string =>
  * Stringifies a constant variable that contains an array.
  * @param constantName
  * @param elements
- * @returns string
+ * @returns The stringified constant variable
  */
-const stringifyArrayConstant = (constantName: string, elements: string[]): string => {
+export const stringifyArrayConstant = (constantName: string, elements: string[]): string => {
   let variable: string = `const ${constantName} = [\n`;
   variable += elements.reduce(
     (prev, current, index) => `${prev}  '${current}'${index < elements.length - 1 ? ',\n' : ','}`,
@@ -36,7 +36,7 @@ const stringifyArrayConstant = (constantName: string, elements: string[]): strin
  * Inserts the pre-cache assets content into the raw template.
  * @param rawTemplate
  * @param precacheAssets
- * @returns string
+ * @returns The raw template with the pre-cache assets inserted
  */
 const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =>
   rawTemplate.replace(
@@ -48,7 +48,7 @@ const __insertPrecacheAssets = (rawTemplate: string, precacheAssets: string[]) =
  * Inserts the exclude MIME Types content into the raw template.
  * @param rawTemplate
  * @param types
- * @returns string
+ * @returns The raw template with the exclude MIME types inserted
  */
 const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
   rawTemplate.replace(
@@ -65,7 +65,7 @@ const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
  * @param cacheName
  * @param precacheAssets
  * @param excludeMIMETypes
- * @returns string
+ * @returns The raw template with the base template built
  */
 const __buildBaseTemplate = (
   cacheName: string,
@@ -90,13 +90,14 @@ const __buildBaseTemplate = (
  * @param template
  * @param cacheName
  * @param precacheAssets
- * @returns string
+ * @param excludeMIMETypes
+ * @returns The raw template with the specified template built
  * @throws
  * - INVALID_TEMPLATE_NAME: if the provided template name is not supported
  * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
  * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
  */
-const buildTemplate = (
+export const buildTemplate = (
   template: ITemplateName,
   cacheName: string,
   precacheAssets: string[],
@@ -115,15 +116,4 @@ const buildTemplate = (
       );
     }
   }
-};
-
-/* ************************************************************************************************
- *                                         MODULE EXPORTS                                         *
- ************************************************************************************************ */
-export {
-  // helpers
-  stringifyArrayConstant,
-
-  // implementation
-  buildTemplate,
 };

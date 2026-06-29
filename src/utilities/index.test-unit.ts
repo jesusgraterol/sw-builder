@@ -6,12 +6,11 @@ import {
   getPathElement,
   readDirectory,
 } from 'fs-utils-sync';
+
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
+import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
 import {
-  OUTPUT_NAME,
-  CACHE_NAME_CHARACTERS,
-  CACHE_NAME_LENGTH,
   generateCacheName,
   readConfigFile,
   buildOutputPath,

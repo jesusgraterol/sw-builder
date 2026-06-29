@@ -1,14 +1,10 @@
 import { IBaseParsedArgs } from 'argv-utils';
 
-/* ************************************************************************************************
- *                                              TYPES                                             *
- ************************************************************************************************ */
-
 /**
  * Module Args
  * The args that can bt passed to the sw-builder CLI
  */
-interface IModuleArgs extends IBaseParsedArgs {
+export interface IModuleArgs extends IBaseParsedArgs {
   config?: string;
 }
 
@@ -16,14 +12,14 @@ interface IModuleArgs extends IBaseParsedArgs {
  * Template Name
  * The list of templates supported by the sw-builder.
  */
-type ITemplateName = 'base';
+export type ITemplateName = 'base';
 
 /**
  * Base Configuration
  * The configuration required to build the 'base' template. This type should be turned into a
  * discriminated union once more templates are introduced.
  */
-type IBaseConfig = {
+export type IBaseConfig = {
   // the dir path in which the build's output is placed
   outDir: string;
 
@@ -39,8 +35,3 @@ type IBaseConfig = {
   // the list of MIME Types that won't be cached when the app sends HTTP GET requests
   excludeMIMETypesFromCache: string[];
 };
-
-/* ************************************************************************************************
- *                                         MODULE EXPORTS                                         *
- ************************************************************************************************ */
-export type { IModuleArgs, ITemplateName, IBaseConfig };

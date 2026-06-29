@@ -2,7 +2,7 @@ import { describe, afterAll, test, expect } from 'vitest';
 import { deleteDirectory, deleteFile, isFile, writeJSONFile, writeTextFile } from 'fs-utils-sync';
 import { IBaseConfig, IModuleArgs } from '../shared/types.js';
 import { run } from './index.js';
-import { buildOutputPath } from '../utils/index.js';
+import { buildOutputPath } from '../utilities/index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *

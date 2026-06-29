@@ -9,21 +9,10 @@ import {
   IPathElement,
   readDirectory,
 } from 'fs-utils-sync';
+
 import { IBaseConfig } from '../shared/types.js';
 import { ERRORS } from '../shared/errors.js';
-
-/* ************************************************************************************************
- *                                           CONSTANTS                                            *
- ************************************************************************************************ */
-
-// the characters that can be used to generate cache names
-const CACHE_NAME_CHARACTERS = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-// the number of characters that will comprise the cache names
-const CACHE_NAME_LENGTH: number = 10;
-
-// the name of the file that is built and placed in the outDir
-const OUTPUT_NAME: string = 'sw.js';
+import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
 
 /* ************************************************************************************************
  *                                            HELPERS                                             *
@@ -94,7 +83,7 @@ const __validateConfigFile = (config: IBaseConfig): void => {
 /**
  * Extracts the path element from a given path.
  * @param path
- * @returns IPathElement
+ * @returns The path element object
  * @throws
  * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
@@ -113,7 +102,10 @@ const __getPathElement = (path: string): IPathElement => {
  * @param outDir
  * @param path
  * @param excludeFilesFromPrecache
- * @returns string[]
+ * @returns A list of cacheable files in the directory
+ * @throws
+ * - NOT_A_DIRECTORY: if the directory is not considered a directory by the OS.
+ * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
 const __extractCacheableFilesFromDirectory = (
   outDir: string,
@@ -140,14 +132,14 @@ const __extractCacheableFilesFromDirectory = (
 /**
  * Reads, validates and returns the configuration file.
  * @param configPath
- * @returns IBaseConfig
+ * @returns The configuration object
  * @throws
  * - NOT_A_FILE: if the path is not recognized by the OS as a file or if it doesn't exist
  * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the content of the file is empty or invalid
  * - FILE_CONTENT_IS_EMPTY_OR_INVALID: if the file's JSON content cannot be parsed
  * - INVALID_CONFIG_VALUE: if any of the essential config values is invalid
  */
-const readConfigFile = (configPath: string): IBaseConfig => {
+export const readConfigFile = (configPath: string): IBaseConfig => {
   const config: IBaseConfig = <IBaseConfig>readJSONFile(configPath);
   __validateConfigFile(config);
   return config;
@@ -155,9 +147,9 @@ const readConfigFile = (configPath: string): IBaseConfig => {
 
 /**
  * Generates a randomly generated name to be used for the CacheStorage
- * @returns string
+ * @returns The generated cache name
  */
-const generateCacheName = (): string =>
+export const generateCacheName = (): string =>
   generateRandomString(CACHE_NAME_LENGTH, CACHE_NAME_CHARACTERS);
 
 /**
@@ -166,11 +158,11 @@ const generateCacheName = (): string =>
  * @param outDir
  * @param includeToPrecache
  * @param excludeFilesFromPrecache
- * @returns string[]
+ * @returns The list of assets that will be precached
  * @throws
  * - NOT_A_PATH_ELEMENT: if the provided path doesn't exist or is not a valid path element
  */
-const buildPrecacheAssetPaths = (
+export const buildPrecacheAssetPaths = (
   outDir: string,
   includeToPrecache: string[],
   excludeFilesFromPrecache: string[],
@@ -205,22 +197,6 @@ const buildPrecacheAssetPaths = (
 /**
  * Builds the binary's output build based on the config's outDir.
  * @param outDir
- * @returns string
+ * @returns The output path for the build
  */
-const buildOutputPath = (outDir: string): string => join(outDir, OUTPUT_NAME);
-
-/* ************************************************************************************************
- *                                         MODULE EXPORTS                                         *
- ************************************************************************************************ */
-export {
-  // constants
-  CACHE_NAME_CHARACTERS,
-  CACHE_NAME_LENGTH,
-  OUTPUT_NAME,
-
-  // implementation
-  readConfigFile,
-  generateCacheName,
-  buildPrecacheAssetPaths,
-  buildOutputPath,
-};
+export const buildOutputPath = (outDir: string): string => join(outDir, OUTPUT_NAME);
