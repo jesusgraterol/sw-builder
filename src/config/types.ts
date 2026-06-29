@@ -23,12 +23,12 @@ export type IBaseConfig = z.infer<typeof BaseConfigSchema>;
 
 // the configuration required to build the service worker for a Firebase project
 export const FirebaseOptionsSchema = z.strictObject({
-  apiKey: z.string().min(1), // e.g. 'AIzaSyDxNpnLNVUBPw-6GYemNbI1cY_jquo5Ukg'
-  authDomain: z.string().min(1), // e.g. 'moldea-dev.firebaseapp.com'
-  projectId: z.string().min(1), // e.g. 'moldea-dev'
-  storageBucket: z.string().min(1), // e.g. 'moldea-dev.firebasestorage.app'
-  messagingSenderId: z.string().min(1), // e.g. '579449369835'
-  appId: z.string().min(1), // e.g. '1:579449369835:web:4956b3fe27532be234baae'
+  apiKey: z.string().min(1),
+  authDomain: z.string().min(1),
+  projectId: z.string().min(1),
+  storageBucket: z.string().min(1),
+  messagingSenderId: z.string().min(1),
+  appId: z.string().min(1),
 });
 
 export type IFirebaseOptions = z.infer<typeof FirebaseOptionsSchema>;
