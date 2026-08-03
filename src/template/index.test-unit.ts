@@ -87,6 +87,12 @@ describe('Template', () => {
       expect(template).toContain("const CACHE_NAME = 'testcache';");
       expect(template).toContain('const PRECACHE_ASSETS = [];');
       expect(template).toContain('const EXCLUDE_MIME_TYPES = [];');
+      expect(template).toContain('response.ok &&');
+      expect(template).not.toContain('request.ok &&');
+      expect(template).toContain('await putInCache(request, response);');
+      expect(template).toContain(
+        'event.waitUntil(putInCacheSafely(request, responseFromNetwork.clone()));',
+      );
       expect(template).not.toContain(stringifyArrayConstant('PRECACHE_ASSETS', []));
       expect(template).not.toContain(stringifyArrayConstant('EXCLUDE_MIME_TYPES', []));
     });
@@ -132,6 +138,12 @@ describe('Template', () => {
       );
       expect(template).toContain(
         stringifyArrayConstant('EXCLUDE_MIME_TYPES', ['application/json', 'text/plain']),
+      );
+      expect(template).toContain('response.ok &&');
+      expect(template).not.toContain('request.ok &&');
+      expect(template).toContain('await putInCache(request, response);');
+      expect(template).toContain(
+        'event.waitUntil(putInCacheSafely(request, responseFromNetwork.clone()));',
       );
       expect(template)
         .toContain(`\n\n/* ************************************************************************************************

@@ -43,17 +43,30 @@ const isMIMETypeCacheable = (contentTypeHeader) =>
   !EXCLUDE_MIME_TYPES.some((type) => contentTypeHeader.includes(type));
 
 /**
- * All requests should be cached except for:
+ * Verifies that a response does not vary on every request header.
+ * @param {*} varyHeader
+ * @returns A boolean indicating if the value of the header is cacheable
+ */
+const isVaryHeaderCacheable = (varyHeader) =>
+  varyHeader === null || !varyHeader.split(',').some((field) => field.trim() === '*');
+
+/**
+ * All successful responses should be cached except for:
  * - Non-GET requests
- * - Requests with MIME Types that are not included in EXCLUDE_MIME_TYPES
+ * - Opaque responses
+ * - Partial Content responses
+ * - Responses that include a Vary: * header
+ * - Requests or responses with MIME Types included in EXCLUDE_MIME_TYPES
  * @param {*} request
  * @param {*} response
  * @returns A boolean indicating if the request can be cached
  */
 const canRequestBeCached = (request, response) =>
-  request.ok &&
+  response.ok &&
+  response.status !== 206 &&
   request.method === 'GET' &&
   response.type !== 'opaque' &&
+  isVaryHeaderCacheable(response.headers.get('vary')) &&
   isMIMETypeCacheable(request.headers.get('accept')) &&
   isMIMETypeCacheable(response.headers.get('content-type'));
 
@@ -71,13 +84,30 @@ const putInCache = async (request, response) => {
 };
 
 /**
+ * Attempts to cache a response without rejecting the fetch lifecycle on storage failures.
+ * @param {*} request
+ * @param {*} response
+ * @returns A promise that resolves after the cache write has completed or failed
+ */
+const putInCacheSafely = async (request, response) => {
+  try {
+    await putInCache(request, response);
+  } catch (error) {
+    // cache writes are best-effort and must not replace a valid network response
+    // eslint-disable-next-line no-console
+    console.error('Failed to cache the network response.', error);
+  }
+};
+
+/**
  * Intercepts the fetch requests and attempts to fill them with data from the cache. If not present,
  * it will perform the request and store the data in cache.
  * Note: the Response stored in cache is a clone as it can only be read once.
  * @param {*} request
+ * @param {*} event
  * @returns A promise that resolves to a Response object
  */
-const cacheFirst = async (request) => {
+const cacheFirst = async (request, event) => {
   // first, try to get the resource from the cache
   const responseFromCache = await caches.match(request);
   if (responseFromCache) {
@@ -85,16 +115,18 @@ const cacheFirst = async (request) => {
   }
 
   // next, try to get the resource from the network
+  let responseFromNetwork;
   try {
-    const responseFromNetwork = await fetch(request);
-    putInCache(request, responseFromNetwork.clone());
-    return responseFromNetwork;
+    responseFromNetwork = await fetch(request);
   } catch (error) {
     return new Response('Network error happened', {
       status: 408,
       headers: { 'Content-Type': 'text/plain' },
     });
   }
+
+  event.waitUntil(putInCacheSafely(request, responseFromNetwork.clone()));
+  return responseFromNetwork;
 };
 
 /**------------------------------------------------------------------------------------------------
@@ -140,5 +172,5 @@ self.addEventListener('activate', (event) => {
  * resumes the network request and then stores it cache for future requests.
  */
 self.addEventListener('fetch', (event) => {
-  event.respondWith(cacheFirst(event.request));
+  event.respondWith(cacheFirst(event.request, event));
 });
