@@ -2,6 +2,18 @@ import { stringifyArrayConstant } from '../utilities.js';
 import { BASE_TEMPLATE } from './base.js';
 
 /**
+ * Inserts the application-owned cache namespace into the raw template.
+ * @param rawTemplate The raw template in which the cache name prefix will be inserted.
+ * @param cacheNamePrefix The application-owned cache namespace.
+ * @returns The raw template with the cache name prefix inserted.
+ */
+const __insertCacheNamePrefix = (rawTemplate: string, cacheNamePrefix: string): string =>
+  rawTemplate.replace(
+    "const CACHE_NAME_PREFIX = '';",
+    `const CACHE_NAME_PREFIX = '${cacheNamePrefix}';`,
+  );
+
+/**
  * Inserts the freshly generated cacheName into the raw template.
  * @param rawTemplate The raw template in which the cacheName will be inserted
  * @param cacheName The name of the cache that will be used in the Service Worker
@@ -40,18 +52,21 @@ const __insertExcludeMIMETypes = (rawTemplate: string, types: string[]) =>
 
 /**
  * Builds the base template ready to be saved.
+ * @param cacheNamePrefix The application-owned cache namespace.
  * @param cacheName The name of the cache that will be used in the Service Worker
  * @param precacheAssets The list of assets that will be precached by the Service Worker
  * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache
  * @returns The raw template with the base template built
  */
 export const buildBaseTemplate = (
+  cacheNamePrefix: string,
   cacheName: string,
   precacheAssets: string[],
   excludeMIMETypes: string[],
 ): string => {
-  // insert the cache name
-  let template = __insertCacheName(BASE_TEMPLATE, cacheName);
+  // insert the cache namespace and version-specific name
+  let template = __insertCacheNamePrefix(BASE_TEMPLATE, cacheNamePrefix);
+  template = __insertCacheName(template, cacheName);
 
   // insert the pre-cache assets
   template = __insertPrecacheAssets(template, precacheAssets);

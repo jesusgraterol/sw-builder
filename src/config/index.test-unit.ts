@@ -15,6 +15,9 @@ import { readConfigFile } from './index.js';
 // the config's test path
 const CONFIG_PATH = 'config.json';
 
+// application-specific cache namespace used by valid configuration fixtures
+const CACHE_NAME_PREFIX = 'test-app';
+
 // env key used to isolate Firebase config values from the developer's shell
 const TEST_FIREBASE_CONFIG_PROCESS_ENV_KEY = 'SW_BUILDER_TEST_FIREBASE_CONFIG';
 
@@ -56,6 +59,7 @@ type IExceptionExpectation = {
  */
 const buildBaseConfig = (config: Partial<IBaseConfig> = {}): IBaseConfig => ({
   outDir: config.outDir ?? 'test-dist',
+  cacheNamePrefix: config.cacheNamePrefix ?? CACHE_NAME_PREFIX,
   template: 'base',
   includeToPrecache: config.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
   excludeFilesFromPrecache: config.excludeFilesFromPrecache ?? [],
@@ -69,6 +73,7 @@ const buildBaseConfig = (config: Partial<IBaseConfig> = {}): IBaseConfig => ({
  */
 const buildFirebaseFcmConfig = (config: Partial<IFirebaseFcmConfig> = {}): IFirebaseFcmConfig => ({
   outDir: config.outDir ?? 'test-dist',
+  cacheNamePrefix: config.cacheNamePrefix ?? CACHE_NAME_PREFIX,
   template: 'firebase-fcm',
   includeToPrecache: config.includeToPrecache ?? ['/', '/index.html', '/style.css', 'app.js'],
   excludeFilesFromPrecache: config.excludeFilesFromPrecache ?? [],
@@ -194,7 +199,34 @@ describe('readConfigFile', () => {
     expect(loadDotEnv).not.toHaveBeenCalled();
   });
 
+  test('accepts an explicit safe cache name prefix', () => {
+    const baseConfig = buildBaseConfig({ cacheNamePrefix: 'customer-dashboard' });
+    vi.mocked(readJSONFile).mockReturnValue(baseConfig);
+
+    expect(readConfigFile(CONFIG_PATH, undefined)).toStrictEqual(baseConfig);
+  });
+
   test.each([
+    ['missing', undefined],
+    ['empty', ''],
+    ['uppercase', 'Customer-Dashboard'],
+    ['leading-hyphen', '-customer'],
+    ['trailing-hyphen', 'customer-'],
+    ['repeated-hyphen', 'customer--dashboard'],
+  ])('rejects a %s cache name prefix', (_description, cacheNamePrefix) => {
+    vi.mocked(readJSONFile).mockReturnValue({
+      ...buildBaseConfig(),
+      cacheNamePrefix,
+    });
+
+    expectException(() => readConfigFile(CONFIG_PATH, undefined), {
+      code: ERRORS.FAILED_TO_READ_BASE_CONFIG,
+      messagePrefix: `Failed to read the base configuration file '${CONFIG_PATH}':`,
+    });
+  });
+
+  test.each([
+    ['missing cache name prefix', { ...buildFirebaseFcmConfig(), cacheNamePrefix: undefined }],
     [
       'missing Firebase config env key',
       { ...buildFirebaseFcmConfig(), firebaseConfigProcessEnvKey: undefined },

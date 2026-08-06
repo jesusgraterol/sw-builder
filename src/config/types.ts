@@ -2,10 +2,20 @@ import { z } from 'zod';
 
 import { TemplateNameSchema } from '../shared/types.js';
 
+import { CACHE_NAME_PREFIX_PATTERN } from './constants.js';
+
 // shared configuration fields used by every service worker template
 const BaseConfigShape = {
   // the dir path in which the build's output is placed
   outDir: z.string().min(1),
+
+  // the application-owned namespace used to isolate generated CacheStorage entries
+  cacheNamePrefix: z
+    .string()
+    .regex(
+      CACHE_NAME_PREFIX_PATTERN,
+      'The cache name prefix must contain lowercase alphanumeric tokens separated by hyphens.',
+    ),
 
   // the list of asset paths that will be traversed and included in the cache
   includeToPrecache: z.array(z.string()),

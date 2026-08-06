@@ -1,10 +1,19 @@
 import { describe, afterAll, test, expect } from 'vitest';
-import { deleteDirectory, deleteFile, isFile, writeJSONFile, writeTextFile } from 'fs-utils-sync';
+import {
+  deleteDirectory,
+  deleteFile,
+  isFile,
+  readTextFile,
+  writeJSONFile,
+  writeTextFile,
+} from 'fs-utils-sync';
 
 import type { IBaseConfig } from '../config/index.js';
 import type { IModuleArgs } from '../shared/types.js';
-import { run } from './index.js';
+import { stringifyArrayConstant } from '../template/utilities.js';
 import { buildOutputPath } from '../utilities/index.js';
+
+import { run } from './index.js';
 
 /* ************************************************************************************************
  *                                           CONSTANTS                                            *
@@ -27,6 +36,7 @@ const CONFIG_PATH: string = 'sw-builder.config.json';
  */
 const buildBaseConfig = (config?: Partial<IBaseConfig>): IBaseConfig => ({
   outDir: config?.outDir ?? DIST_PATH,
+  cacheNamePrefix: config?.cacheNamePrefix ?? 'test-app',
   template: 'base',
   includeToPrecache: config?.includeToPrecache ?? [],
   excludeFilesFromPrecache: config?.excludeFilesFromPrecache ?? [],
@@ -48,7 +58,7 @@ describe('Build', () => {
     writeJSONFile(
       'sw-builder.config.json',
       buildBaseConfig({
-        includeToPrecache: ['/index.html', '/assets'],
+        includeToPrecache: ['/assets'],
       }),
     );
 
@@ -61,6 +71,19 @@ describe('Build', () => {
     run(<IModuleArgs>{ config: CONFIG_PATH });
 
     // ensure the service worker was created
-    expect(isFile(buildOutputPath(DIST_PATH))).toBeTruthy();
+    const outputPath = buildOutputPath(DIST_PATH);
+    expect(isFile(outputPath)).toBeTruthy();
+
+    const serviceWorker = readTextFile(outputPath);
+    expect(serviceWorker).toContain("const CACHE_NAME_PREFIX = 'test-app';");
+    expect(serviceWorker).toMatch(/const CACHE_NAME = 'test-app--[a-z0-9]{10}';/);
+    expect(serviceWorker).toContain(
+      stringifyArrayConstant('PRECACHE_ASSETS', [
+        '/assets/index-B3okp6nu.js',
+        '/assets/index-DYWPQKGv.css',
+      ]),
+    );
+    expect(serviceWorker).not.toContain("  '/',");
+    expect(serviceWorker).not.toContain("  '/index.html',");
   });
 });
