@@ -63,6 +63,7 @@ const __insertFirebaseOptions = (rawTemplate: string, firebaseOptions: IFirebase
 
 /**
  * Builds the Firebase FCM template ready to be saved.
+ * @param cacheNamePrefix The application-owned cache namespace.
  * @param cacheName The name of the cache that will be used in the Service Worker.
  * @param precacheAssets The list of assets that will be precached by the Service Worker.
  * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache.
@@ -71,13 +72,19 @@ const __insertFirebaseOptions = (rawTemplate: string, firebaseOptions: IFirebase
  * @returns The raw template with the base and Firebase FCM templates built.
  */
 export const buildFirebaseFcmTemplate = (
+  cacheNamePrefix: string,
   cacheName: string,
   precacheAssets: string[],
   excludeMIMETypes: string[],
   firebaseOptions: IFirebaseOptions,
   firebaseSdkVersion: string,
 ): string => {
-  const baseTemplate = buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
+  const baseTemplate = buildBaseTemplate(
+    cacheNamePrefix,
+    cacheName,
+    precacheAssets,
+    excludeMIMETypes,
+  );
   let firebaseFcmTemplate = __insertFirebaseSdkVersion(FIREBASE_FCM_TEMPLATE, firebaseSdkVersion);
 
   firebaseFcmTemplate = __insertFirebaseSdkImports(firebaseFcmTemplate, firebaseSdkVersion);

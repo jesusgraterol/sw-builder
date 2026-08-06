@@ -4,7 +4,12 @@ import { Exception } from 'error-message-utils';
 import { type IPathElement, getPathElement, readDirectory } from 'fs-utils-sync';
 
 import { ERRORS } from '../shared/errors.js';
-import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
+import {
+  CACHE_NAME_CHARACTERS,
+  CACHE_NAME_LENGTH,
+  CACHE_NAME_SEPARATOR,
+  OUTPUT_NAME,
+} from './constants.js';
 import { generateCacheName, buildOutputPath, buildPrecacheAssetPaths } from './index.js';
 
 /* ************************************************************************************************
@@ -96,12 +101,18 @@ const expectException = (
 describe('generateCacheName', () => {
   test('can generate a valid cache name', () => {
     expect(
-      new RegExp(`^[${CACHE_NAME_CHARACTERS}]{${CACHE_NAME_LENGTH}}$`).test(generateCacheName()),
+      new RegExp(
+        `^test-app${CACHE_NAME_SEPARATOR}[${CACHE_NAME_CHARACTERS}]{${CACHE_NAME_LENGTH}}$`,
+      ).test(generateCacheName('test-app')),
     ).toBeTruthy();
   });
 
   test('generates a different name every time', () => {
-    const arr: string[] = [generateCacheName(), generateCacheName(), generateCacheName()];
+    const arr: string[] = [
+      generateCacheName('test-app'),
+      generateCacheName('test-app'),
+      generateCacheName('test-app'),
+    ];
     const unique: Set<string> = new Set(arr);
     expect(unique.size).toBe(arr.length);
   });
@@ -155,7 +166,6 @@ describe('buildPrecacheAssetPaths', () => {
     expect(
       buildPrecacheAssetPaths(OUT_DIR, ['/index.html', '/styles.css', '/app.js', '/img'], []),
     ).toStrictEqual([
-      '/',
       '/index.html',
       '/styles.css',
       '/app.js',
@@ -185,7 +195,48 @@ describe('buildPrecacheAssetPaths', () => {
         ['/index.html', '/styles.css', '/app.js', '/img'],
         ['some-other-img.jpg'],
       ),
-    ).toStrictEqual(['/', '/index.html', '/styles.css', '/app.js', '/img/some-img.png']);
+    ).toStrictEqual(['/index.html', '/styles.css', '/app.js', '/img/some-img.png']);
+  });
+
+  test('ignores an explicitly included file when its name is excluded', () => {
+    mockGetPathElement([pe({ baseName: 'app.js', isFile: true })]);
+
+    expect(buildPrecacheAssetPaths(OUT_DIR, ['/app.js'], ['app.js'])).toStrictEqual([]);
+    expect(readDirectory).not.toHaveBeenCalled();
+  });
+
+  test('includes the application root only when explicitly configured', () => {
+    expect(buildPrecacheAssetPaths(OUT_DIR, ['/'], [])).toStrictEqual(['/']);
+  });
+
+  test('does not implicitly include the application root for a directory', () => {
+    mockGetPathElement([pe({ baseName: 'assets', path: `${OUT_DIR}/assets`, isDirectory: true })]);
+    vi.mocked(readDirectory).mockReturnValueOnce([
+      `${OUT_DIR}/assets/app.js`,
+      `${OUT_DIR}/assets/app.css`,
+    ]);
+    mockGetPathElement([
+      pe({ baseName: 'app.js', isFile: true }),
+      pe({ baseName: 'app.css', isFile: true }),
+    ]);
+
+    expect(buildPrecacheAssetPaths(OUT_DIR, ['/assets'], [])).toStrictEqual([
+      '/assets/app.js',
+      '/assets/app.css',
+    ]);
+  });
+
+  test('removes duplicate paths produced by overlapping explicit inputs', () => {
+    mockGetPathElement([
+      pe({ baseName: 'app.js', isFile: true }),
+      pe({ baseName: 'assets', path: `${OUT_DIR}/assets`, isDirectory: true }),
+    ]);
+    vi.mocked(readDirectory).mockReturnValueOnce([`${OUT_DIR}/assets/app.js`]);
+    mockGetPathElement([pe({ baseName: 'app.js', isFile: true })]);
+
+    expect(buildPrecacheAssetPaths(OUT_DIR, ['/assets/app.js', '/assets'], [])).toStrictEqual([
+      '/assets/app.js',
+    ]);
   });
 });
 

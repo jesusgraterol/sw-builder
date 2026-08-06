@@ -9,6 +9,7 @@ import { buildFirebaseFcmTemplate } from './firebase-fcm/index.js';
 /**
  * Builds a Service Worker Template by name.
  * @param template The name of the template to be built
+ * @param cacheNamePrefix The application-owned cache namespace
  * @param cacheName The name of the cache that will be used in the Service Worker
  * @param precacheAssets The list of assets that will be precached by the Service Worker
  * @param excludeMIMETypes The list of MIME Types that will be excluded from the cache
@@ -21,6 +22,7 @@ import { buildFirebaseFcmTemplate } from './firebase-fcm/index.js';
  */
 export const buildTemplate = (
   template: ITemplateName,
+  cacheNamePrefix: string,
   cacheName: string,
   precacheAssets: string[],
   excludeMIMETypes: string[],
@@ -29,10 +31,11 @@ export const buildTemplate = (
 ): string => {
   switch (template) {
     case 'base': {
-      return buildBaseTemplate(cacheName, precacheAssets, excludeMIMETypes);
+      return buildBaseTemplate(cacheNamePrefix, cacheName, precacheAssets, excludeMIMETypes);
     }
     case 'firebase-fcm': {
       return buildFirebaseFcmTemplate(
+        cacheNamePrefix,
         cacheName,
         precacheAssets,
         excludeMIMETypes,

@@ -27,13 +27,14 @@ export const run = ({ config = 'sw-builder.config.json', environment }: IModuleA
     configuration.includeToPrecache,
     configuration.excludeFilesFromPrecache,
   );
-  const cacheName = generateCacheName();
+  const cacheName = generateCacheName(configuration.cacheNamePrefix);
 
   // build the Service Worker's Template
   const template =
     configuration.template === 'firebase-fcm'
       ? buildTemplate(
           configuration.template,
+          configuration.cacheNamePrefix,
           cacheName,
           precacheAssetPaths,
           configuration.excludeMIMETypesFromCache,
@@ -42,6 +43,7 @@ export const run = ({ config = 'sw-builder.config.json', environment }: IModuleA
         )
       : buildTemplate(
           configuration.template,
+          configuration.cacheNamePrefix,
           cacheName,
           precacheAssetPaths,
           configuration.excludeMIMETypesFromCache,

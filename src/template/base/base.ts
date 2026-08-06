@@ -6,7 +6,13 @@ export const BASE_TEMPLATE: string = `/* ***************************************
  * Constants
  -------------------------------------------------------------------------------------------------*/
 
-// the current version of the cache
+// the application-owned prefix shared by all versions of this worker
+const CACHE_NAME_PREFIX = '';
+
+// the unambiguous namespace used to identify caches owned by this application
+const CACHE_NAMESPACE = CACHE_NAME_PREFIX + '--';
+
+// the current version-specific cache name
 const CACHE_NAME = '';
 
 // assets that will be cached once the service worker is installed
@@ -30,6 +36,14 @@ const precacheResources = async () => {
     await cache.addAll(PRECACHE_ASSETS);
   }
 };
+
+/**
+ * Verifies that a request is eligible for interception by this Service Worker.
+ * @param {*} request
+ * @returns A boolean indicating if the request should be handled
+ */
+const shouldHandleRequest = (request) =>
+  request.method === 'GET' && new URL(request.url).origin === self.location.origin;
 
 /**
  * Verifies if the value of the 'Accept' or 'Content-Type' header is cacheable.
@@ -106,8 +120,9 @@ const putInCacheSafely = async (request, response) => {
  * @returns A promise that resolves to a Response object
  */
 const cacheFirst = async (request, event) => {
-  // first, try to get the resource from the cache
-  const responseFromCache = await caches.match(request);
+  // first, try to get the resource from the current version's cache
+  const cache = await caches.open(CACHE_NAME);
+  const responseFromCache = await cache.match(request);
   if (responseFromCache) {
     return responseFromCache;
   }
@@ -132,12 +147,14 @@ const cacheFirst = async (request, event) => {
  -------------------------------------------------------------------------------------------------*/
 
 /**
- * Deletes everything stored in cache that doesn't match the current version.
- * @returns A promise that resolves when the old caches have been deleted
+ * Deletes older caches owned by the configured application namespace.
+ * @returns A promise that resolves when the old application caches have been deleted
  */
 const deleteOldCaches = async () => {
   const keyList = await caches.keys();
-  const cachesToDelete = keyList.filter((key) => key !== CACHE_NAME);
+  const cachesToDelete = keyList.filter(
+    (key) => key.startsWith(CACHE_NAMESPACE) && key !== CACHE_NAME,
+  );
   if (cachesToDelete.length) {
     await Promise.all(cachesToDelete.map((key) => caches.delete(key)));
   }
@@ -148,28 +165,28 @@ const deleteOldCaches = async () => {
  -------------------------------------------------------------------------------------------------*/
 
 /**
- * Triggers when the Service Worker has been fetched and registered.
- * It takes care of clearing and adding the new base resources to the cache.
+ * Triggers when the Service Worker has been fetched and registered. It populates only this worker
+ * version's cache, leaving the active worker and its cache available to existing clients.
  */
 self.addEventListener('install', (event) => {
-  event.waitUntil(deleteOldCaches().then(() => precacheResources()));
+  event.waitUntil(precacheResources());
 });
 
 /**
- * Triggers after the Service Worker is installed and it has taken control of the app.
- * It takes care of enabling navigation preload (if supported) and it also takes control of any
- * pages that were controlled by the previous version of the worker (if any).
+ * Triggers when the installed Service Worker becomes active. It deletes older application-owned
+ * caches before taking control of existing clients.
  */
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim().then(() => deleteOldCaches()));
+  event.waitUntil(deleteOldCaches().then(() => self.clients.claim()));
 });
 
 /**
- * Triggers when the app thread makes a network request.
- * It intercepts the request and checks if it can be filled with data from cache. Otherwise, it
- * resumes the network request and then stores it cache for future requests.
+ * Triggers when the app thread makes a network request. Same-origin GET requests are served from
+ * the current version's cache when possible, then fetched and cached for future requests.
  */
 self.addEventListener('fetch', (event) => {
-  event.respondWith(cacheFirst(event.request, event));
+  if (shouldHandleRequest(event.request)) {
+    event.respondWith(cacheFirst(event.request, event));
+  }
 });
 `;

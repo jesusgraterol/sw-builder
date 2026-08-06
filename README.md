@@ -18,12 +18,9 @@ Create the `sw-builder.config.json` file in your project's root:
 {
   "outDir": "dist",
   "template": "base",
+  "cacheNamePrefix": "my-app",
   "includeToPrecache": [
-    "/assets",
-    "/some-other-dir",
-    "/index.html",
-    "/logo.png",
-    "/splash.png"
+    "/assets"
   ],
   "excludeFilesFromPrecache": [
     "some-ignorable-file.woff2"
@@ -35,6 +32,8 @@ Create the `sw-builder.config.json` file in your project's root:
   ]
 }
 ```
+
+This recommended configuration recursively precaches the hashed files under `/assets` without caching `/` or `index.html`. Precache inputs are exact: `/` is included only when it is explicitly listed in `includeToPrecache`.
 
 Include the `sw-builder` binary in your `package.json` file:
 
@@ -57,6 +56,24 @@ If you are using [Vite](https://vitejs.dev/) include an empty `sw.js` file in yo
 
 <br/>
 
+## Cache lifecycle and request scope
+
+Each build creates a version-specific cache named `<cacheNamePrefix>--<random-suffix>`. The required `cacheNamePrefix` configuration property must contain lowercase alphanumeric tokens separated by single hyphens, such as `my-app` or `customer-dashboard`. Choose an application-specific value, especially when multiple applications use the same origin, so each generated worker cleans up only the caches it owns.
+
+The generated worker uses the safe Service Worker lifecycle:
+
+- `install` populates only the new version's cache and does not call `skipWaiting()`.
+- The previous worker and cache remain available to its existing clients while the new worker waits to activate.
+- `activate` deletes older caches with the same configured namespace, preserves unrelated and legacy anonymous caches, and then calls `clients.claim()`.
+- Runtime lookups read only from the current version's cache.
+
+Only same-origin `GET` requests are intercepted. Other methods and cross-origin requests continue through the browser normally. Successful runtime responses are cached only when they pass the status, opaque-response, partial-content, `Vary`, and MIME safeguards; a cache-write failure is logged without replacing a valid network response.
+
+`includeToPrecache` describes exactly what should be precached. Directories are traversed recursively, filename exclusions still apply, an empty list disables precaching, and the application root `/` is never added implicitly. To precache the application shell, list `/` and/or `/index.html` explicitly.
+
+
+<br/>
+
 ## Using the `firebase-fcm` template
 
 The `firebase-fcm` template includes the same caching behavior as the `base` template and appends
@@ -68,6 +85,7 @@ Update your `sw-builder.config.json` file to use the `firebase-fcm` template:
 {
   "outDir": "dist",
   "template": "firebase-fcm",
+  "cacheNamePrefix": "my-app",
   "includeToPrecache": [],
   "excludeFilesFromPrecache": [],
   "excludeMIMETypesFromCache": [
@@ -123,6 +141,9 @@ URL when missing or unsafe.
     // the dir path in which the build's output is placed
     outDir: string;
 
+    // the required application-specific cache namespace
+    cacheNamePrefix: string;
+
     // the name of the template that will be generated
     template: "base";
 
@@ -171,6 +192,7 @@ URL when missing or unsafe.
   ```typescript
   type IFirebaseFcmConfig = {
     outDir: string;
+    cacheNamePrefix: string;
     includeToPrecache: string[];
     excludeFilesFromPrecache: string[];
     excludeMIMETypesFromCache: string[];

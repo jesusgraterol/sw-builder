@@ -6,6 +6,4 @@
 .prettierrc
 tsconfig.json
 tsconfig.build.json
-vitest.test-e2e.config.ts
-vitest.test-integration.config.ts
-vitest.test-unit.config.ts
+/vitest

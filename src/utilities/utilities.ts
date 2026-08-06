@@ -5,14 +5,23 @@ import { generateRandomString } from 'web-utils-kit';
 import { getPathElement, type IPathElement, readDirectory } from 'fs-utils-sync';
 
 import { ERRORS } from '../shared/errors.js';
-import { CACHE_NAME_CHARACTERS, CACHE_NAME_LENGTH, OUTPUT_NAME } from './constants.js';
+import {
+  CACHE_NAME_CHARACTERS,
+  CACHE_NAME_LENGTH,
+  CACHE_NAME_SEPARATOR,
+  OUTPUT_NAME,
+} from './constants.js';
 
 /**
- * Generates a randomly generated name to be used for the CacheStorage
- * @returns The generated cache name
+ * Generates a version-specific CacheStorage name within an application-owned namespace.
+ * @param cacheNamePrefix The application-owned cache namespace.
+ * @returns The generated cache name.
  */
-export const generateCacheName = (): string =>
-  generateRandomString(CACHE_NAME_LENGTH, CACHE_NAME_CHARACTERS);
+export const generateCacheName = (cacheNamePrefix: string): string =>
+  `${cacheNamePrefix}${CACHE_NAME_SEPARATOR}${generateRandomString(
+    CACHE_NAME_LENGTH,
+    CACHE_NAME_CHARACTERS,
+  )}`;
 
 /**
  * Extracts the path element from a given path.
@@ -77,26 +86,31 @@ export const buildPrecacheAssetPaths = (
     return [];
   }
 
-  // init the list of assets
-  const assets: string[] = ['/'];
+  // preserve input order while avoiding duplicates from overlapping paths
+  const assets = new Set<string>();
 
-  // iterate over each asset that will be precached. Ensure to avoid the root path and files that
-  // should be excluded
+  // include exactly the requested paths and the cacheable files found in requested directories
   includeToPrecache.forEach((path: string) => {
-    if (path !== '/') {
-      const el = __getPathElement(join(outDir, path));
-      if (el.isFile && !excludeFilesFromPrecache.includes(el.baseName)) {
-        assets.push(path);
-      } else {
-        assets.push(
-          ...__extractCacheableFilesFromDirectory(outDir, el.path, excludeFilesFromPrecache),
-        );
-      }
+    if (path === '/') {
+      assets.add(path);
+      return;
     }
+
+    const el = __getPathElement(join(outDir, path));
+    if (el.isFile) {
+      if (!excludeFilesFromPrecache.includes(el.baseName)) {
+        assets.add(path);
+      }
+      return;
+    }
+
+    __extractCacheableFilesFromDirectory(outDir, el.path, excludeFilesFromPrecache).forEach(
+      (filePath) => assets.add(filePath),
+    );
   });
 
   // finally, return the completed list
-  return assets;
+  return [...assets];
 };
 
 /**

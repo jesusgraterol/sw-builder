@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { Script } from 'node:vm';
 import { describe, afterEach, test, expect, vi } from 'vitest';
 import { Exception } from 'error-message-utils';
 
@@ -83,8 +84,17 @@ describe('Template', () => {
     });
 
     test('can build a base template', () => {
-      const template = buildTemplate('base', 'testcache', [], [], undefined, undefined);
-      expect(template).toContain("const CACHE_NAME = 'testcache';");
+      const template = buildTemplate(
+        'base',
+        'test-app',
+        'test-app--version-a',
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+      expect(template).toContain("const CACHE_NAME_PREFIX = 'test-app';");
+      expect(template).toContain("const CACHE_NAME = 'test-app--version-a';");
       expect(template).toContain('const PRECACHE_ASSETS = [];');
       expect(template).toContain('const EXCLUDE_MIME_TYPES = [];');
       expect(template).toContain('response.ok &&');
@@ -100,13 +110,15 @@ describe('Template', () => {
     test('can build a base template with precache assets and excluded MIME types', () => {
       const template = buildTemplate(
         'base',
-        'testcache',
+        'test-app',
+        'test-app--version-a',
         ['/', '/assets/', '/assets/bundle.js', '/index.html'],
         ['application/json', 'text/plain'],
         undefined,
         undefined,
       );
-      expect(template).toContain("const CACHE_NAME = 'testcache';");
+      expect(template).toContain("const CACHE_NAME_PREFIX = 'test-app';");
+      expect(template).toContain("const CACHE_NAME = 'test-app--version-a';");
       expect(template).toContain(
         stringifyArrayConstant('PRECACHE_ASSETS', [
           '/',
@@ -125,14 +137,16 @@ describe('Template', () => {
     test('can build a Firebase FCM template appended to the base template', () => {
       const template = buildTemplate(
         'firebase-fcm',
-        'testcache',
+        'test-app',
+        'test-app--version-a',
         ['/', '/assets/bundle.js', '/index.html'],
         ['application/json', 'text/plain'],
         TEST_FIREBASE_OPTIONS,
         FIREBASE_SDK_VERSION,
       );
 
-      expect(template).toContain("const CACHE_NAME = 'testcache';");
+      expect(template).toContain("const CACHE_NAME_PREFIX = 'test-app';");
+      expect(template).toContain("const CACHE_NAME = 'test-app--version-a';");
       expect(template).toContain(
         stringifyArrayConstant('PRECACHE_ASSETS', ['/', '/assets/bundle.js', '/index.html']),
       );
@@ -145,6 +159,16 @@ describe('Template', () => {
       expect(template).toContain(
         'event.waitUntil(putInCacheSafely(request, responseFromNetwork.clone()));',
       );
+      const baseTemplate = buildTemplate(
+        'base',
+        'test-app',
+        'test-app--version-a',
+        ['/', '/assets/bundle.js', '/index.html'],
+        ['application/json', 'text/plain'],
+        undefined,
+        undefined,
+      );
+      expect(template.startsWith(baseTemplate.trimEnd())).toBe(true);
       expect(template)
         .toContain(`\n\n/* ************************************************************************************************
  *                                          FIREBASE FCM                                          *
@@ -165,6 +189,7 @@ describe('Template', () => {
       expect(template).toContain(
         `firebase.initializeApp(${JSON.stringify(TEST_FIREBASE_OPTIONS, null, 2)});`,
       );
+      expect(() => new Script(template)).not.toThrow();
     });
   });
 });
