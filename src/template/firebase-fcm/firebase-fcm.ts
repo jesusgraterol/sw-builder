@@ -126,7 +126,7 @@ self.addEventListener('notificationclick', (event) => {
 
 /**
  * Import the Firebase scripts and initialize the Firebase app with the provided configuration. It also
- * sets up a background message handler to display notifications or send messages to clients.
+ * sets up a background message handler to display notifications when no window is visible.
  */
 importScripts('firebase-app-compat.js');
 importScripts('firebase-messaging-compat.js');
@@ -136,24 +136,20 @@ firebase.initializeApp({});
 const messaging = firebase.messaging();
 
 /**
- * Service Worker event listener for background messages. It checks if there are any clients for the
- * current application. If there are clients, it sends a message to each client with the received data.
- * If there are no clients, it displays a notification with the received data.
+ * The SDK invokes this callback only when no window is visible. An open hidden window still
+ * requires a system notification; visible windows use the SDK's foreground path instead.
  */
-messaging.onBackgroundMessage(async ({ data }) => {
-  const appClients = await getAppClients();
-
-  if (appClients.length > 0) {
-    for (const client of appClients) {
-      client.postMessage({
-        type: 'PUSH_MESSAGE',
-        data,
-      });
-    }
-
+messaging.onBackgroundMessage(async (payload) => {
+  const applicationHandler = self.swBuilderFcmBackgroundMessageHandler;
+  if (typeof applicationHandler === 'function') {
+    await applicationHandler(payload);
     return;
   }
 
+  // the SDK has already displayed notification payloads before this callback.
+  if (payload.notification) return;
+
+  const { data } = payload;
   await self.registration.showNotification(data.title, {
     body: data.body,
     icon: data.icon,

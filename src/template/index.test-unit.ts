@@ -191,5 +191,113 @@ describe('Template', () => {
       );
       expect(() => new Script(template)).not.toThrow();
     });
+
+    test('shows a background notification even when a hidden app window exists', async () => {
+      const template = buildTemplate(
+        'firebase-fcm',
+        'test-app',
+        'test-app--version-a',
+        [],
+        [],
+        TEST_FIREBASE_OPTIONS,
+        FIREBASE_SDK_VERSION,
+      );
+      const showNotification = vi.fn().mockResolvedValue(undefined);
+      const matchAll = vi
+        .fn()
+        .mockResolvedValue([{ url: 'https://cloud.example.com/', visibilityState: 'hidden' }]);
+      let onBackgroundMessage:
+        | ((payload: {
+            data: Record<string, string>;
+            notification?: { title: string };
+          }) => Promise<void>)
+        | undefined;
+      const self = {
+        location: { origin: 'https://cloud.example.com' },
+        registration: { showNotification },
+        addEventListener: vi.fn(),
+      };
+      new Script(template).runInNewContext({
+        self,
+        clients: { matchAll, openWindow: vi.fn() },
+        firebase: {
+          initializeApp: vi.fn(),
+          messaging: () => ({
+            onBackgroundMessage: (callback: typeof onBackgroundMessage) => {
+              onBackgroundMessage = callback;
+            },
+          }),
+        },
+        importScripts: vi.fn(),
+        URL,
+      });
+
+      await onBackgroundMessage?.({
+        data: { title: 'Account update', body: 'A detail', url: '/notifications' },
+      });
+      expect(showNotification).toHaveBeenCalledOnce();
+      await onBackgroundMessage?.({
+        data: { title: 'Account update', body: 'A detail', url: '/notifications' },
+        notification: { title: 'Already displayed by Firebase' },
+      });
+      expect(showNotification).toHaveBeenCalledOnce();
+      expect(matchAll).not.toHaveBeenCalled();
+    });
+
+    test('awaits an application background handler without showing another notification', async () => {
+      const template = buildTemplate(
+        'firebase-fcm',
+        'test-app',
+        'test-app--version-a',
+        [],
+        [],
+        TEST_FIREBASE_OPTIONS,
+        FIREBASE_SDK_VERSION,
+      );
+      let onBackgroundMessage:
+        | ((payload: { data: Record<string, string> }) => Promise<void>)
+        | undefined;
+      const self = {
+        location: { origin: 'https://cloud.example.com' },
+        registration: { showNotification: vi.fn() },
+        addEventListener: vi.fn(),
+        swBuilderFcmBackgroundMessageHandler: undefined as
+          | undefined
+          | ((payload: { data: Record<string, string> }) => Promise<void>),
+      };
+      new Script(template).runInNewContext({
+        self,
+        clients: { matchAll: vi.fn(), openWindow: vi.fn() },
+        firebase: {
+          initializeApp: vi.fn(),
+          messaging: () => ({
+            onBackgroundMessage: (callback: typeof onBackgroundMessage) => {
+              onBackgroundMessage = callback;
+            },
+          }),
+        },
+        importScripts: vi.fn(),
+        URL,
+      });
+      let complete!: () => void;
+      const completion = new Promise<void>((resolve) => {
+        complete = resolve;
+      });
+      const handler = vi.fn(() => completion);
+      self.swBuilderFcmBackgroundMessageHandler = handler;
+      if (!onBackgroundMessage) throw new Error('Missing background callback.');
+      const payload = { data: { title: 'Account update', body: 'A detail' } };
+      const callbackPromise = onBackgroundMessage(payload);
+      let didSettle = false;
+      const observedLifetime = callbackPromise.then(() => {
+        didSettle = true;
+      });
+      expect(handler).toHaveBeenCalledWith(payload);
+      expect(didSettle).toBe(false);
+      complete();
+      await observedLifetime;
+      expect(didSettle).toBe(true);
+      expect(self.registration.showNotification).not.toHaveBeenCalled();
+    });
   });
 });
