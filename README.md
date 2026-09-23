@@ -119,12 +119,21 @@ The `environment` value must be `development`, `staging`, or `production`. It is
 Firebase-related command argument, and it determines the dotenv file name used by the builder:
 `.env`, `.env.staging`, or `.env.production`.
 
-The generated Service Worker imports the Firebase compat SDK scripts from `gstatic`, initializes the
-Firebase app with the provided options, and handles background messages. When app clients are open,
-messages are posted to them as `{ type: 'PUSH_MESSAGE', data }`. When no app client is open, the
-Service Worker shows a notification using the `title`, `body`, `icon`, `badge`, and `url` fields from
-the message data. Notification click URLs are limited to the same origin and fall back to the app root
-URL when missing or unsafe.
+The generated Service Worker imports the Firebase compat SDK scripts from `gstatic` and initializes
+Firebase with the provided options. The SDK routes messages to a visible app window without a system
+notification. Its background callback shows a system notification when no app window is visible,
+including when a window is open but hidden. The default notification uses the `title`, `body`, `icon`,
+`badge`, and `url` fields from the message data. Notification click URLs are limited to the same origin
+and fall back to the app root URL when missing or unsafe.
+
+An application that needs its own background validation or display policy can append code to the
+generated worker and assign `self.swBuilderFcmBackgroundMessageHandler = async (payload) => { ... }`.
+The template awaits this handler inside Firebase Messaging's background callback, which runs as part
+of the original push event. The application handler owns notification display and must await any
+`registration.showNotification()` call. Without the handler, the template displays data-only pushes
+and lets Firebase Messaging display notification payloads. Send data-only pushes when the application
+must decide whether to display them: Firebase Messaging displays a notification payload before the
+application handler runs. Firebase Messaging remains initialized for subscription changes.
 
 <br/>
 
